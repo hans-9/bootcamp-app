@@ -2,41 +2,73 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Stack
+
+React + Vite (client, port 3000) — Express (server, port 3001) — npm workspaces monorepo — ES modules throughout.
+
 ## Commands
 
 ```bash
-# Start both server and client (run from repo root)
-npm run dev
-
-# Run server only
+npm run dev          # start both server and client
 npm run dev -w server
-
-# Run client only
 npm run dev -w client
-
-# Install all dependencies (run from repo root after adding packages)
-npm install
+npm install          # after adding packages
 ```
-
-There are no tests configured yet. Manual test cases live in `tests/manual/` and are created with the `/new-test` skill.
 
 ## Architecture
 
-This is an npm workspaces monorepo with two packages:
+- **`server/`** — Express API, entry at `server/index.js`. Add routes as `app.get/post('/api/...')`.
+- **`client/`** — React + Vite SPA, entry at `client/src/main.jsx`, root component at `client/src/App.jsx`.
 
-- **`server/`** — Express API, ES modules, entry at `server/index.js`. Runs on port 3001. Add new routes here as `app.get/post('/api/...')`.
-- **`client/`** — React + Vite SPA, entry at `client/src/main.jsx`, root component at `client/src/App.jsx`. Runs on port 3000.
+API calls from the client use relative paths (`/api/...`). Vite proxies them to the server — no CORS handling or hardcoded URLs needed.
 
-**API calls from the client use relative paths** (`/api/...`). Vite proxies them to the server at `http://localhost:3001` during development, so no CORS handling or hardcoded URLs are needed.
+## API Response Shape
 
-Both packages use `"type": "module"` — ES module syntax (`import`/`export`) throughout. The server uses `node --watch` for auto-restart on file changes.
+Every endpoint returns:
+
+```json
+{ "success": boolean, "data": any, "error": string | null }
+```
+
+## Severity Levels
+
+- **Critical** — app crashes or data is lost.
+- **Major** — core feature is broken with no workaround.
+- **Minor** — feature partially works or has a workaround.
+- **Trivial** — cosmetic or low-impact issue.
+
+## Test Case Fields
+
+`title` · `preconditions` · `steps` (numbered) · `expected result` · `severity` · `status` (draft / ready / passed / failed / skipped)
+
+## Bug Report Fields
+
+`title` · `steps to reproduce` · `expected` · `actual` · `severity` · `status` (open / in-progress / resolved / closed / reopened)
+
+## File Naming
+
+- Files: `kebab-case.js`
+- React components: `PascalCase.jsx`
+- API handlers: `handleVerbNoun` (e.g. `handleCreateUser`)
+
+## Commit Messages
+
+Use the format `type: short description` (all lowercase, no period). Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`. Keep the subject under 72 characters. Examples:
+
+```
+feat: add login endpoint
+fix: return 401 when token is missing
+chore: install express-validator
+```
+
+## Voice
+
+Write test cases and bug reports in clear, direct English. State what happens, not what "should ideally occur." No buzzwords, no filler, no passive voice where active works.
 
 ## Custom Skills
 
-Skills (slash commands) live at `.claude/skills/<command-name>/SKILL.md`. Example:
+Skills (slash commands) live at `.claude/skills/<command-name>/SKILL.md`.
 
-```
-.claude/skills/new-test/SKILL.md
-```
-
-The `SKILL.md` file contains plain markdown instructions that Claude follows when the skill is invoked with `/<command-name>`.
+- `/new-test` — write a manual test case, saved to `tests/manual/`
+- `/bug-report` — file a bug report, saved to `tests/bugs/`
+- `/feature-spec` — define a feature spec, saved to `docs/specs/`
