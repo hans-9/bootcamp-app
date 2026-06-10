@@ -41,6 +41,12 @@ Every endpoint returns:
 
 `title` · `preconditions` · `steps` (numbered) · `expected result` · `severity` · `status` (draft / ready / passed / failed / skipped)
 
+## Test Case Rules
+
+- **One scenario per test case.** Each test covers a single path (e.g. "valid login" and "wrong password" are two separate cases, never one).
+- **Use standard test data** so cases are reproducible: valid account `test@example.com` / `Password123`; invalid password `wrong123`; non-existent user `ghost@example.com`.
+- **Every step is a single observable action** with one expected result — no "do X, then Y, then Z" crammed into one step.
+
 ## Bug Report Fields
 
 `title` · `steps to reproduce` · `expected` · `actual` · `severity` · `status` (open / in-progress / resolved / closed / reopened)
