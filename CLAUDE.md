@@ -67,6 +67,10 @@ fix: return 401 when token is missing
 chore: install express-validator
 ```
 
+Before committing, offer three commit message suggestions and let the user choose.
+
+Do not add a `Co-Authored-By` trailer (or any AI-attribution line) to commit messages.
+
 ## Voice
 
 Write test cases and bug reports in clear, direct English. State what happens, not what "should ideally occur." No buzzwords, no filler, no passive voice where active works.
