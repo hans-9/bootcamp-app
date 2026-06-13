@@ -1,5 +1,7 @@
-import { Routes, Route, Navigate, Link } from 'react-router-dom'
+import { Routes, Route, Navigate, Link, NavLink } from 'react-router-dom'
 import TestCasesPage from './pages/TestCasesPage.jsx'
+import TestSuitesPage from './pages/TestSuitesPage.jsx'
+import SuiteDetailPage from './pages/SuiteDetailPage.jsx'
 
 export default function App() {
   return (
@@ -10,10 +12,16 @@ export default function App() {
             Bootcamp App
           </Link>
         </h1>
+        <nav className="app-nav">
+          <NavLink to="/test-cases">Test Cases</NavLink>
+          <NavLink to="/test-suites">Test Suites</NavLink>
+        </nav>
       </header>
       <Routes>
         <Route path="/" element={<Navigate to="/test-cases" replace />} />
         <Route path="/test-cases" element={<TestCasesPage />} />
+        <Route path="/test-suites" element={<TestSuitesPage />} />
+        <Route path="/test-suites/:id" element={<SuiteDetailPage />} />
       </Routes>
     </>
   )

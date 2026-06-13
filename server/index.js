@@ -6,6 +6,16 @@ import {
   handleUpdateTestCase,
   handleDeleteTestCase,
 } from './test-cases.js'
+import {
+  handleListSuites,
+  handleGetSuite,
+  handleCreateSuite,
+  handleUpdateSuite,
+  handleDeleteSuite,
+  handleAddCaseToSuite,
+  handleRemoveCaseFromSuite,
+  handleReorderSuiteCases,
+} from './suites.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -21,6 +31,15 @@ app.get('/api/test-cases/:id', handleGetTestCase)
 app.post('/api/test-cases', handleCreateTestCase)
 app.put('/api/test-cases/:id', handleUpdateTestCase)
 app.delete('/api/test-cases/:id', handleDeleteTestCase)
+
+app.get('/api/test-suites', handleListSuites)
+app.post('/api/test-suites', handleCreateSuite)
+app.get('/api/test-suites/:id', handleGetSuite)
+app.put('/api/test-suites/:id', handleUpdateSuite)
+app.delete('/api/test-suites/:id', handleDeleteSuite)
+app.post('/api/test-suites/:id/cases', handleAddCaseToSuite)
+app.put('/api/test-suites/:id/cases/order', handleReorderSuiteCases)
+app.delete('/api/test-suites/:id/cases/:caseId', handleRemoveCaseFromSuite)
 
 // Unmatched API routes still return the { success, data, error } shape.
 app.use('/api', (req, res) => {

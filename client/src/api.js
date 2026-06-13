@@ -34,3 +34,32 @@ export const updateTestCase = (id, payload) =>
 
 export const deleteTestCase = (id) =>
   request(`/api/test-cases/${id}`, { method: 'DELETE' })
+
+export function listSuites({ status } = {}) {
+  const qs = new URLSearchParams()
+  if (status) qs.set('status', status)
+  return request(`/api/test-suites?${qs.toString()}`)
+}
+
+export const getSuite = (id) => request(`/api/test-suites/${id}`)
+
+export const createSuite = (payload) =>
+  request('/api/test-suites', { method: 'POST', body: JSON.stringify(payload) })
+
+export const updateSuite = (id, payload) =>
+  request(`/api/test-suites/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+
+export const deleteSuite = (id) =>
+  request(`/api/test-suites/${id}`, { method: 'DELETE' })
+
+export const addCaseToSuite = (id, caseId) =>
+  request(`/api/test-suites/${id}/cases`, { method: 'POST', body: JSON.stringify({ case_id: caseId }) })
+
+export const removeCaseFromSuite = (id, caseId) =>
+  request(`/api/test-suites/${id}/cases/${caseId}`, { method: 'DELETE' })
+
+export const reorderSuiteCases = (id, caseIds) =>
+  request(`/api/test-suites/${id}/cases/order`, {
+    method: 'PUT',
+    body: JSON.stringify({ case_ids: caseIds }),
+  })

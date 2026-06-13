@@ -5,10 +5,12 @@ import { dirname, join } from 'node:path'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const db = new Database(join(__dirname, 'data.db'))
 db.pragma('journal_mode = WAL')
+db.pragma('foreign_keys = ON') // enforce suite_cases foreign keys + ON DELETE CASCADE
 
 // Allowed values, per CLAUDE.md.
 export const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
 export const STATUSES = ['draft', 'ready', 'passed', 'failed', 'skipped']
+export const SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', 'failed']
 
 // Rank used for "sort by severity" — higher number = more severe, so
 // ORDER BY rank DESC puts Critical first (matches "updated DESC = newest first").
@@ -28,9 +30,33 @@ db.exec(`
   )
 `)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS test_suites (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL,
+    feature    TEXT NOT NULL,
+    status     TEXT NOT NULL DEFAULT 'draft',  -- draft | ready | in-progress | passed | failed
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+`)
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS suite_cases (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    suite_id   INTEGER NOT NULL REFERENCES test_suites(id) ON DELETE CASCADE,
+    case_id    INTEGER NOT NULL REFERENCES test_cases(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL,
+    UNIQUE (suite_id, case_id)
+  )
+`)
+
 // Seed once, only when the table is empty.
 const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get()
 if (count === 0) seed()
+
+const { suiteCount } = db.prepare('SELECT COUNT(*) AS suiteCount FROM test_suites').get()
+if (suiteCount === 0) seedSuites()
 
 function seed() {
   const now = new Date().toISOString()
@@ -114,6 +140,41 @@ function seed() {
     })
   })
   insertMany(rows)
+}
+
+function seedSuites() {
+  const now = new Date().toISOString()
+  const ids = db
+    .prepare('SELECT id FROM test_cases ORDER BY id LIMIT 6')
+    .all()
+    .map((r) => r.id)
+
+  const suites = [
+    { name: 'Login flow', feature: 'login', status: 'in-progress', caseIds: ids.slice(0, 3) },
+    { name: 'Session & validation', feature: 'session', status: 'draft', caseIds: ids.slice(2, 5) },
+  ]
+
+  const insertSuite = db.prepare(
+    `INSERT INTO test_suites (name, feature, status, created_at, updated_at)
+     VALUES (@name, @feature, @status, @created_at, @updated_at)`,
+  )
+  const insertLink = db.prepare(
+    `INSERT INTO suite_cases (suite_id, case_id, sort_order) VALUES (?, ?, ?)`,
+  )
+
+  const seedAll = db.transaction((items) => {
+    items.forEach((s) => {
+      const { lastInsertRowid: suiteId } = insertSuite.run({
+        name: s.name,
+        feature: s.feature,
+        status: s.status,
+        created_at: now,
+        updated_at: now,
+      })
+      s.caseIds.forEach((caseId, i) => insertLink.run(suiteId, caseId, i))
+    })
+  })
+  seedAll(suites)
 }
 
 export default db
