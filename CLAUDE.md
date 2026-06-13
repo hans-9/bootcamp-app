@@ -59,7 +59,20 @@ Every endpoint returns:
 
 ## Commit Messages
 
-Use the format `type: short description` (all lowercase, no period). Types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`. Keep the subject under 72 characters. Examples:
+Use the format `type: short description` (all lowercase, no period). Keep the subject under 72 characters. Types:
+
+- `feat` — a new feature or capability
+- `fix` — a bug fix
+- `perf` — a performance improvement
+- `refactor` — code change that neither fixes a bug nor adds a feature
+- `docs` — documentation only
+- `test` — adding or updating tests
+- `build` — build system or dependency changes (e.g. `package.json`, lockfiles)
+- `ci` — CI / pipeline configuration
+- `chore` — maintenance that doesn't fit the above
+- `revert` — revert a previous commit
+
+Examples:
 
 ```
 feat: add login endpoint
