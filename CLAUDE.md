@@ -57,6 +57,10 @@ Every endpoint returns:
 - React components: `PascalCase.jsx`
 - API handlers: `handleVerbNoun` (e.g. `handleCreateUser`)
 
+## Code Comments
+
+Add a comment only when the code genuinely benefits — to explain a non-obvious *why*, not to restate *what* the code already says. Default to none.
+
 ## Commit Messages
 
 Use the format `type: short description` (all lowercase, no period). Keep the subject under 72 characters. Types:
