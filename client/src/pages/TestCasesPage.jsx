@@ -97,6 +97,18 @@ export default function TestCasesPage() {
     load()
   }
 
+  // null on failure — a flaky lookup must never block creation.
+  async function findDuplicateTitle(title) {
+    const needle = title.trim()
+    if (!needle) return null
+    try {
+      const result = await listTestCases({ title: needle })
+      return result.items[0]?.title ?? null
+    } catch {
+      return null
+    }
+  }
+
   async function handleDelete(tc) {
     if (!window.confirm(`Delete "${tc.title}"? This cannot be undone.`)) return
     try {
@@ -241,6 +253,7 @@ export default function TestCasesPage() {
           initial={editing}
           onSave={handleSave}
           onClose={() => setEditing(undefined)}
+          findDuplicateTitle={findDuplicateTitle}
         />
       )}
     </div>

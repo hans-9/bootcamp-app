@@ -37,6 +37,7 @@ export function handleListTestCases(req, res) {
   const page = Math.max(1, parseInt(req.query.page) || 1)
   const perPage = 20
   const search = String(req.query.search ?? '').trim()
+  const title = String(req.query.title ?? '').trim()
   const status = String(req.query.status ?? '').trim()
   const sort = req.query.sort === 'severity' ? 'severity' : 'updated' // default: updated
   const dir = req.query.dir === 'asc' ? 'ASC' : 'DESC' // default: desc
@@ -46,6 +47,10 @@ export function handleListTestCases(req, res) {
   if (search) {
     where.push('title LIKE @search')
     params.search = `%${search}%`
+  }
+  if (title) {
+    where.push('lower(title) = lower(@title)')
+    params.title = title
   }
   if (status && STATUSES.includes(status)) {
     where.push('status = @status')

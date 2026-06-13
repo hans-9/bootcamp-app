@@ -13,7 +13,7 @@ const blank = {
 }
 
 // `initial` is a test case to edit, or null/undefined to create a new one.
-export default function TestCaseForm({ initial, onSave, onClose }) {
+export default function TestCaseForm({ initial, onSave, onClose, findDuplicateTitle }) {
   const [form, setForm] = useState(() =>
     initial ? { ...initial, steps: initial.steps.length ? initial.steps : [''] } : blank,
   )
@@ -38,6 +38,19 @@ export default function TestCaseForm({ initial, onSave, onClose }) {
     setSaving(true)
     setError(null)
     try {
+      if (!initial && findDuplicateTitle) {
+        const dup = await findDuplicateTitle(form.title.trim())
+        if (
+          dup &&
+          !window.confirm(
+            `A test case titled "${dup}" already exists. Create another with the same title?`,
+          )
+        ) {
+          setSaving(false)
+          return
+        }
+      }
+
       await onSave({
         title: form.title.trim(),
         preconditions: form.preconditions.trim(),

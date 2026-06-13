@@ -15,10 +15,11 @@ async function request(path, options) {
   return body.data
 }
 
-export function listTestCases({ page, search, status, sort, dir } = {}) {
+export function listTestCases({ page, search, title, status, sort, dir } = {}) {
   const qs = new URLSearchParams()
   if (page) qs.set('page', page)
   if (search) qs.set('search', search)
+  if (title) qs.set('title', title)
   if (status) qs.set('status', status)
   if (sort) qs.set('sort', sort)
   if (dir) qs.set('dir', dir)
