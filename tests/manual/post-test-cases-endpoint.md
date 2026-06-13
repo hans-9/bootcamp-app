@@ -212,6 +212,15 @@
 - **Severity:** Major
 - **Status:** draft
 
+### Severity with surrounding whitespace is trimmed then accepted
+
+- **Preconditions:** Server running.
+- **Steps:**
+  1. Send `POST` with `severity:" Minor "` (leading/trailing spaces), other fields valid.
+- **Expected result:** `201`; saved `severity` is `"Minor"`. Documents that enum values are trimmed before the membership check.
+- **Severity:** Trivial
+- **Status:** draft
+
 ## `status` — enum partitions
 
 ### Valid non-default status is accepted
@@ -232,6 +241,15 @@
 - **Severity:** Major
 - **Status:** draft
 
+### Explicit empty-string status is rejected (differs from omitting it)
+
+- **Preconditions:** Server running.
+- **Steps:**
+  1. Send `POST` with `status:""` and otherwise valid fields.
+- **Expected result:** `400`, `error:"Status must be one of: …"`. Note the asymmetry: omitting `status` defaults to `draft` and succeeds, but an explicit empty string is rejected (the default only fills `null`/`undefined`).
+- **Severity:** Minor
+- **Status:** draft
+
 ## Body-level negative & duplicate cases
 
 ### Malformed JSON body is rejected cleanly
@@ -250,6 +268,33 @@
   1. Send `POST` with `title:"Login test"` and otherwise valid fields.
 - **Expected result:** `201`; a second row with the same title and a distinct `id` is created.
 - **Severity:** Minor
+- **Status:** draft
+
+### Oversized request body is rejected as too large
+
+- **Preconditions:** Server running.
+- **Steps:**
+  1. Send `POST` with a body larger than the 100 KB parser limit (e.g. a 200,000-character `title`).
+- **Expected result:** `413`, `error:"Request body is too large."` — not the generic "Internal server error."
+- **Severity:** Minor
+- **Status:** draft
+
+### Unknown or injected fields in the body are ignored
+
+- **Preconditions:** Server running.
+- **Steps:**
+  1. Send `POST` with `{id:999, created_at:"hacked", title:"x", steps:["s"], expected_result:"y", severity:"Minor"}`.
+- **Expected result:** `201`; the server assigns its own `id` and `created_at` — the supplied `id`/`created_at` are not honored (no mass assignment).
+- **Severity:** Major
+- **Status:** draft
+
+### Missing or non-JSON body is rejected without crashing
+
+- **Preconditions:** Server running.
+- **Steps:**
+  1. Send `POST` with no body, or with `Content-Type: text/plain`.
+- **Expected result:** `400`, `error:"Title is required."` — a clean validation error, not a `500`.
+- **Severity:** Major
 - **Status:** draft
 
 ## Create form — duplicate-title warning (UI)
@@ -283,5 +328,25 @@
   1. Open an existing case via Edit without changing its title.
   2. Click Save changes.
 - **Expected result:** The case saves with no duplicate warning (the check is scoped to create only).
+- **Severity:** Minor
+- **Status:** draft
+
+### Duplicate warning does not catch internal-whitespace differences (known gap)
+
+- **Preconditions:** App running; a case titled "Login test" (single space) exists.
+- **Steps:**
+  1. Open the New test case form and enter title "Login  test" (two spaces between words) with otherwise valid fields.
+  2. Click Create test case.
+- **Expected result:** No warning appears and the case is created — matching is trimmed at the ends and case-insensitive, but does not collapse internal whitespace. Documents a known limitation.
+- **Severity:** Trivial
+- **Status:** draft
+
+### A failed duplicate lookup does not block creation
+
+- **Preconditions:** App running; the duplicate-check request can be made to fail (e.g. server stopped or network offline while the form is open).
+- **Steps:**
+  1. Open the New test case form and enter a title that already exists, with otherwise valid fields.
+  2. Cause the lookup request to fail, then click Create test case.
+- **Expected result:** No warning is shown and the create proceeds normally — a failed lookup never blocks creation.
 - **Severity:** Minor
 - **Status:** draft

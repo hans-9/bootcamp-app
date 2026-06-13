@@ -30,7 +30,12 @@ app.use('/api', (req, res) => {
 // Any thrown error (incl. malformed JSON bodies) returns the same shape.
 app.use((err, req, res, next) => {
   const status = err.status || 500
-  const message = status === 400 ? 'Invalid request body.' : 'Internal server error.'
+  const message =
+    status === 400
+      ? 'Invalid request body.'
+      : status === 413
+        ? 'Request body is too large.'
+        : 'Internal server error.'
   res.status(status).json({ success: false, data: null, error: message })
 })
 
