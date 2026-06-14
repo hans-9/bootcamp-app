@@ -58,6 +58,7 @@ export default function TestCaseForm({ initial, onSave, onClose, findDuplicateTi
         expected_result: form.expected_result.trim(),
         severity: form.severity,
         status: form.status,
+        updated_at: initial?.updated_at,
       })
     } catch (err) {
       setError(err.message)

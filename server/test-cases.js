@@ -6,8 +6,16 @@ const ok = (res, data) => res.json({ success: true, data, error: null })
 const fail = (res, status, message) =>
   res.status(status).json({ success: false, data: null, error: message })
 
-// Turn a DB row into the JSON shape the client uses (steps parsed back to an array).
-const serialize = (row) => ({ ...row, steps: JSON.parse(row.steps) })
+const serialize = (row) => {
+  // A corrupt steps value degrades to [] instead of 500-ing the whole list.
+  let steps
+  try {
+    steps = JSON.parse(row.steps)
+  } catch {
+    steps = []
+  }
+  return { ...row, steps }
+}
 
 // Validate a create/update body. Returns { value } or { error }.
 function validate(body) {
@@ -34,7 +42,7 @@ function validate(body) {
 // ---- handlers ----
 
 export function handleListTestCases(req, res) {
-  const page = Math.max(1, parseInt(req.query.page) || 1)
+  const requestedPage = Math.max(1, parseInt(req.query.page) || 1)
   const perPage = 20
   const search = String(req.query.search ?? '').trim()
   const title = String(req.query.title ?? '').trim()
@@ -69,6 +77,7 @@ export function handleListTestCases(req, res) {
 
   const { total } = db.prepare(`SELECT COUNT(*) AS total FROM test_cases ${whereSql}`).get(params)
   const totalPages = Math.max(1, Math.ceil(total / perPage))
+  const page = Math.min(requestedPage, totalPages) // an out-of-range page returns the last page, not empty
   const offset = (page - 1) * perPage
 
   const rows = db
@@ -107,8 +116,11 @@ export function handleCreateTestCase(req, res) {
 }
 
 export function handleUpdateTestCase(req, res) {
-  const existing = db.prepare('SELECT id FROM test_cases WHERE id = ?').get(req.params.id)
+  const existing = db.prepare('SELECT updated_at FROM test_cases WHERE id = ?').get(req.params.id)
   if (!existing) return fail(res, 404, 'Test case not found.')
+
+  if (req.body.updated_at && req.body.updated_at !== existing.updated_at)
+    return fail(res, 409, 'This test case changed since you opened it. Reload and try again.')
 
   const { value, error } = validate(req.body)
   if (error) return fail(res, 400, error)

@@ -20,7 +20,7 @@ import {
 const app = express()
 const PORT = process.env.PORT || 3001
 
-app.use(express.json())
+app.use(express.json({ limit: '100kb' }))
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, data: { status: 'ok' }, error: null })
@@ -49,6 +49,7 @@ app.use('/api', (req, res) => {
 // Any thrown error (incl. malformed JSON bodies) returns the same shape.
 app.use((err, req, res, next) => {
   const status = err.status || 500
+  if (status >= 500) console.error(`${req.method} ${req.originalUrl} →`, err)
   const message =
     status === 400
       ? 'Invalid request body.'

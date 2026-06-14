@@ -113,8 +113,8 @@ export default function TestCasesPage() {
     if (!window.confirm(`Delete "${tc.title}"? This cannot be undone.`)) return
     try {
       await deleteTestCase(tc.id)
-      // If we just removed the last row on a page, step back a page.
-      if (data && data.items.length === 1 && page > 1) setPage((p) => p - 1)
+      const lastPage = Math.max(1, Math.ceil((data.total - 1) / data.perPage))
+      if (page > lastPage) setPage(lastPage) // setPage reloads via the effect; load() would double-fetch
       else load()
     } catch (err) {
       window.alert(err.message)
