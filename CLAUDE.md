@@ -61,6 +61,10 @@ Every endpoint returns:
 
 Add a comment only when the code genuinely benefits — to explain a non-obvious *why*, not to restate *what* the code already says. Default to none.
 
+## Code References
+
+When pointing to code in reviews, findings, summaries, or explanations, write the location as a repo-relative `path:line` (e.g. `server/test-cases.js:10`) so it renders as a clickable link in Claude Code. Do not wrap it in a markdown link or extra punctuation that breaks the link. This applies to subagents and skills too.
+
 ## Commit Messages
 
 Use the format `type: short description` (all lowercase, no period). Keep the subject under 72 characters. Types:
