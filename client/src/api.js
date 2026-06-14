@@ -67,3 +67,34 @@ export const reorderSuiteCases = (id, caseIds) =>
     method: 'PUT',
     body: JSON.stringify({ case_ids: caseIds }),
   })
+
+export function listBugs({ status, severity, priority, search, sort, dir } = {}) {
+  const qs = new URLSearchParams()
+  if (status) qs.set('status', status)
+  if (severity) qs.set('severity', severity)
+  if (priority) qs.set('priority', priority)
+  if (search) qs.set('search', search)
+  if (sort) qs.set('sort', sort)
+  if (dir) qs.set('dir', dir)
+  return request(`/api/bugs?${qs.toString()}`)
+}
+
+export const getBug = (id) => request(`/api/bugs/${id}`)
+
+export const createBug = (payload) =>
+  request('/api/bugs', { method: 'POST', body: JSON.stringify(payload) })
+
+export const updateBug = (id, payload) =>
+  request(`/api/bugs/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+
+export const deleteBug = (id) =>
+  request(`/api/bugs/${id}`, { method: 'DELETE' })
+
+export const changeBugStatus = (id, status, message) =>
+  request(`/api/bugs/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, message }),
+  })
+
+export const addBugComment = (id, message) =>
+  request(`/api/bugs/${id}/comments`, { method: 'POST', body: JSON.stringify({ message }) })

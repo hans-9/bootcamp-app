@@ -11,10 +11,13 @@ db.pragma('foreign_keys = ON') // enforce suite_cases foreign keys + ON DELETE C
 export const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
 export const STATUSES = ['draft', 'ready', 'passed', 'failed', 'skipped']
 export const SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', 'failed']
+export const BUG_STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened']
+export const BUG_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
 
 // Rank used for "sort by severity" — higher number = more severe, so
 // ORDER BY rank DESC puts Critical first (matches "updated DESC = newest first").
 export const SEVERITY_RANK = { Critical: 4, Major: 3, Minor: 2, Trivial: 1 }
+export const PRIORITY_RANK = { Urgent: 4, High: 3, Medium: 2, Low: 1 }
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS test_cases (
@@ -51,12 +54,44 @@ db.exec(`
   )
 `)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS bugs (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    title              TEXT NOT NULL,
+    description        TEXT NOT NULL DEFAULT '',
+    severity           TEXT NOT NULL,            -- Critical | Major | Minor | Trivial
+    priority           TEXT NOT NULL DEFAULT 'Medium', -- Low | Medium | High | Urgent
+    status             TEXT NOT NULL DEFAULT 'open',
+    steps_to_reproduce TEXT NOT NULL,            -- JSON array of step strings
+    expected           TEXT NOT NULL DEFAULT '',
+    actual             TEXT NOT NULL DEFAULT '',
+    environment        TEXT NOT NULL DEFAULT '',
+    created_at         TEXT NOT NULL,
+    updated_at         TEXT NOT NULL
+  )
+`)
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS bug_activity (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    bug_id     INTEGER NOT NULL REFERENCES bugs(id) ON DELETE CASCADE,
+    action     TEXT NOT NULL,            -- 'status_change' | 'comment'
+    old_value  TEXT,
+    new_value  TEXT,
+    message    TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  )
+`)
+
 // Seed once, only when the table is empty.
 const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get()
 if (count === 0) seed()
 
 const { suiteCount } = db.prepare('SELECT COUNT(*) AS suiteCount FROM test_suites').get()
 if (suiteCount === 0) seedSuites()
+
+const { bugCount } = db.prepare('SELECT COUNT(*) AS bugCount FROM bugs').get()
+if (bugCount === 0) seedBugs()
 
 function seed() {
   const now = new Date().toISOString()
@@ -175,6 +210,93 @@ function seedSuites() {
     })
   })
   seedAll(suites)
+}
+
+function seedBugs() {
+  const now = new Date().toISOString()
+  const earlier = '2026-06-11T09:00:00.000Z'
+  const bugs = [
+    {
+      title: 'Login button unresponsive on first click',
+      description: 'The Log In button does nothing on the first click and only works on the second.',
+      severity: 'Major',
+      priority: 'High',
+      status: 'open',
+      steps_to_reproduce: ['Open /login', 'Enter valid credentials', 'Click Log In once'],
+      expected: 'The form submits on the first click.',
+      actual: 'Nothing happens until a second click.',
+      environment: 'Chrome 125, macOS 14',
+      activity: [],
+    },
+    {
+      title: 'Dashboard totals double-count archived items',
+      description: 'Archived records are still included in the dashboard totals.',
+      severity: 'Critical',
+      priority: 'Urgent',
+      status: 'in-progress',
+      steps_to_reproduce: ['Archive a record', 'Open the dashboard', 'Read the totals'],
+      expected: 'Archived records are excluded from totals.',
+      actual: 'Totals include archived records.',
+      environment: 'Firefox 126, Windows 11',
+      activity: [
+        { action: 'status_change', old_value: 'open', new_value: 'in-progress', message: 'Picked up for the current sprint.' },
+      ],
+    },
+    {
+      title: 'Date picker shows wrong month in Safari',
+      description: 'The date picker opens to the previous month in Safari only.',
+      severity: 'Minor',
+      priority: 'Low',
+      status: 'resolved',
+      steps_to_reproduce: ['Open any form with a date field in Safari', 'Click the date field'],
+      expected: 'The picker opens on the current month.',
+      actual: 'The picker opens on the previous month.',
+      environment: 'Safari 17, macOS 14',
+      activity: [
+        { action: 'status_change', old_value: 'open', new_value: 'in-progress', message: '' },
+        { action: 'comment', old_value: null, new_value: null, message: 'Caused by a 0-indexed month off-by-one.' },
+        { action: 'status_change', old_value: 'in-progress', new_value: 'resolved', message: 'Fixed the month offset.' },
+      ],
+    },
+  ]
+
+  const insertBug = db.prepare(
+    `INSERT INTO bugs (title, description, severity, priority, status, steps_to_reproduce, expected, actual, environment, created_at, updated_at)
+     VALUES (@title, @description, @severity, @priority, @status, @steps_to_reproduce, @expected, @actual, @environment, @created_at, @updated_at)`,
+  )
+  const insertActivity = db.prepare(
+    `INSERT INTO bug_activity (bug_id, action, old_value, new_value, message, created_at)
+     VALUES (@bug_id, @action, @old_value, @new_value, @message, @created_at)`,
+  )
+
+  const seedAll = db.transaction((items) => {
+    items.forEach((b) => {
+      const { lastInsertRowid: bugId } = insertBug.run({
+        title: b.title,
+        description: b.description,
+        severity: b.severity,
+        priority: b.priority,
+        status: b.status,
+        steps_to_reproduce: JSON.stringify(b.steps_to_reproduce),
+        expected: b.expected,
+        actual: b.actual,
+        environment: b.environment,
+        created_at: earlier,
+        updated_at: now,
+      })
+      b.activity.forEach((a) => {
+        insertActivity.run({
+          bug_id: bugId,
+          action: a.action,
+          old_value: a.old_value ?? null,
+          new_value: a.new_value ?? null,
+          message: a.message ?? '',
+          created_at: now,
+        })
+      })
+    })
+  })
+  seedAll(bugs)
 }
 
 export default db

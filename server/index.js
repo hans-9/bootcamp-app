@@ -16,6 +16,15 @@ import {
   handleRemoveCaseFromSuite,
   handleReorderSuiteCases,
 } from './suites.js'
+import {
+  handleListBugs,
+  handleGetBug,
+  handleCreateBug,
+  handleUpdateBug,
+  handleDeleteBug,
+  handleChangeBugStatus,
+  handleAddBugComment,
+} from './bugs.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -40,6 +49,14 @@ app.delete('/api/test-suites/:id', handleDeleteSuite)
 app.post('/api/test-suites/:id/cases', handleAddCaseToSuite)
 app.put('/api/test-suites/:id/cases/order', handleReorderSuiteCases)
 app.delete('/api/test-suites/:id/cases/:caseId', handleRemoveCaseFromSuite)
+
+app.get('/api/bugs', handleListBugs)
+app.post('/api/bugs', handleCreateBug)
+app.get('/api/bugs/:id', handleGetBug)
+app.put('/api/bugs/:id', handleUpdateBug)
+app.delete('/api/bugs/:id', handleDeleteBug)
+app.patch('/api/bugs/:id/status', handleChangeBugStatus)
+app.post('/api/bugs/:id/comments', handleAddBugComment)
 
 // Unmatched API routes still return the { success, data, error } shape.
 app.use('/api', (req, res) => {
