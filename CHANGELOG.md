@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.1.0] — 2026-06-14
+
+### Added
+- Bug tracker: file bugs with description, severity, priority, steps, expected/actual results, and environment, and track each one through its activity log.
+- Bug status workflow that enforces the allowed transitions and rejects invalid status moves.
+- Bug list with status, severity, and priority filters, title and description search, and column sorting.
+- Bug pages at /bugs and /bugs/:id with a filter bar, sortable table, status dropdown, activity timeline, and a create/edit form.
+
+### Fixed
+- Concurrent bug status changes are rejected when stale (409) and the client refetches to stay in sync, so one update no longer silently overwrites another.
+- Bug search now matches % and _ literally instead of treating them as wildcards.
+- The bug list now includes the previously missing priority filter.
+- Creating a bug no longer navigates to a broken page when the server returns no id.
+
+[Internal: 2 dev-tooling commits (comment-rule pre-commit hook) were omitted from these notes.]
+
 ## [v1.0.0] — 2026-06-14
 
 ### Added
