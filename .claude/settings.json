@@ -5,5 +5,21 @@
       "Bash(git describe:*)",
       "Bash(git tag:*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(git commit:*)",
+            "timeout": 60,
+            "statusMessage": "Checking staged comments against CLAUDE.md…",
+            "prompt": "Run `git diff --staged` and inspect ONLY the added lines (those starting with +). Judge ONLY code comments against this repo's CLAUDE.md 'Code Comments' rule: a comment is allowed ONLY when it explains a non-obvious WHY; any comment that merely restates WHAT the code already says is a violation. List every newly added comment that violates the rule, with its file path and the exact comment text. If there are no added comments, or none violate the rule, say so clearly. Judge ONLY added comments — ignore pre-existing comments and every other style/convention concern."
+          }
+        ]
+      }
+    ]
   }
 }
