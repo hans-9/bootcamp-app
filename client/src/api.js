@@ -11,7 +11,11 @@ async function request(path, options) {
   } catch {
     throw new Error(`Unexpected response (${res.status})`)
   }
-  if (!body.success) throw new Error(body.error || `Request failed (${res.status})`)
+  if (!body.success) {
+    const err = new Error(body.error || `Request failed (${res.status})`)
+    err.status = res.status
+    throw err
+  }
   return body.data
 }
 

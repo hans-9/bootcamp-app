@@ -195,6 +195,8 @@ tbody tr.clickable { cursor: pointer; }
 .case-row .drag-handle { color: var(--muted); cursor: grab; font-size: 16px; }
 .case-row .case-order { width: 20px; color: var(--muted); text-align: right; }
 .case-row .case-title { flex: 1; font-weight: 600; }
+.case-row .move-buttons { display: flex; gap: 4px; }
+.case-row .move-buttons .btn { padding: 3px 8px; }
 .case-row .remove-case { color: var(--danger); border-color: #f0c9c9; }
 .case-row .remove-case:hover { background: var(--sev-critical-bg); }
 
