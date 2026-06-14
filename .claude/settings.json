@@ -16,7 +16,7 @@
             "if": "Bash(git commit:*)",
             "timeout": 60,
             "statusMessage": "Checking staged comments against CLAUDE.md…",
-            "prompt": "Run `git diff --staged` and inspect ONLY the added lines (those starting with +). Judge ONLY code comments against this repo's CLAUDE.md 'Code Comments' rule: a comment is allowed ONLY when it explains a non-obvious WHY; any comment that merely restates WHAT the code already says is a violation. List every newly added comment that violates the rule, with its file path and the exact comment text. If there are no added comments, or none violate the rule, say so clearly. Judge ONLY added comments — ignore pre-existing comments and every other style/convention concern."
+            "prompt": "You are a pre-commit gate for code comments. Run `git diff --staged` and examine ONLY added lines (those starting with +). Check added code comments against this repo's CLAUDE.md 'Code Comments' rule: a comment is allowed ONLY when it explains a non-obvious WHY; a comment that merely restates WHAT the code already does is a VIOLATION. If you find one or more violations, this check FAILS — block the commit and list each violating comment with its file path and exact text so they can be removed first. If there are no added comments, or none violate the rule, the check PASSES. Judge ONLY added comments; ignore pre-existing comments and every other style/convention concern."
           }
         ]
       }
