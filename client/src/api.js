@@ -90,10 +90,10 @@ export const updateBug = (id, payload) =>
 export const deleteBug = (id) =>
   request(`/api/bugs/${id}`, { method: 'DELETE' })
 
-export const changeBugStatus = (id, status, message) =>
+export const changeBugStatus = (id, status, message, updatedAt) =>
   request(`/api/bugs/${id}/status`, {
     method: 'PATCH',
-    body: JSON.stringify({ status, message }),
+    body: JSON.stringify({ status, message, updated_at: updatedAt }),
   })
 
 export const addBugComment = (id, message) =>

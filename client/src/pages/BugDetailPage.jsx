@@ -72,11 +72,12 @@ export default function BugDetailPage() {
     if (!nextStatus) return
     setBusy(true)
     try {
-      setBug(await changeBugStatus(id, nextStatus, statusMessage.trim()))
+      setBug(await changeBugStatus(id, nextStatus, statusMessage.trim(), bug.updated_at))
       setNextStatus('')
       setStatusMessage('')
     } catch (err) {
       window.alert(err.message)
+      load() // re-sync so the dropdown reflects the current server state
     } finally {
       setBusy(false)
     }

@@ -8,6 +8,7 @@ import BugForm from '../components/BugForm.jsx'
 
 const STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened']
 const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
+const PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -22,6 +23,7 @@ export default function BugsPage() {
 
   const [status, setStatus] = useState('')
   const [severity, setSeverity] = useState('')
+  const [priority, setPriority] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('updated')
@@ -39,7 +41,7 @@ export default function BugsPage() {
     setLoading(true)
     setError(null)
     try {
-      setBugs(await listBugs({ status, severity, search, sort, dir }))
+      setBugs(await listBugs({ status, severity, priority, search, sort, dir }))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -50,7 +52,7 @@ export default function BugsPage() {
   useEffect(() => {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, severity, search, sort, dir])
+  }, [status, severity, priority, search, sort, dir])
 
   useEffect(() => {
     if (menuId === null) return
@@ -75,7 +77,8 @@ export default function BugsPage() {
   async function handleCreate(payload) {
     const bug = await createBug(payload)
     setCreating(false)
-    navigate(`/bugs/${bug.id}`)
+    if (bug?.id) navigate(`/bugs/${bug.id}`)
+    else load()
   }
 
   async function handleDelete(bug) {
@@ -111,6 +114,10 @@ export default function BugsPage() {
         <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
           <option value="">All severities</option>
           {SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+          <option value="">All priorities</option>
+          {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
 
@@ -158,7 +165,7 @@ export default function BugsPage() {
         {error && !loading && <div className="empty">Error: {error}</div>}
         {!loading && !error && items.length === 0 && (
           <div className="empty">
-            No bugs match. {status || severity || search ? 'Try clearing the filters.' : 'Report your first one.'}
+            No bugs match. {status || severity || priority || search ? 'Try clearing the filters.' : 'Report your first one.'}
           </div>
         )}
       </div>

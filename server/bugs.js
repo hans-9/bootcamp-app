@@ -74,8 +74,8 @@ export function handleListBugs(req, res) {
     params.priority = priority
   }
   if (search) {
-    where.push('(title LIKE @search OR description LIKE @search)')
-    params.search = `%${search}%`
+    where.push("(title LIKE @search ESCAPE '\\' OR description LIKE @search ESCAPE '\\')")
+    params.search = `%${search.replace(/[\\%_]/g, '\\$&')}%`
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
 
@@ -158,6 +158,9 @@ export function handleChangeBugStatus(req, res) {
 
   const next = String(req.body.status ?? '').trim()
   if (!BUG_STATUSES.includes(next)) return fail(res, 400, `Unknown status: ${next || '(empty)'}.`)
+  // Check before the transition rules so a stale client gets "refresh", not a confusing 422.
+  if (req.body.updated_at && req.body.updated_at !== bug.updated_at)
+    return fail(res, 409, 'This bug changed since you opened it. Refresh and try again.')
   if (next === bug.status) return fail(res, 400, `Bug is already ${next}.`)
   if (!TRANSITIONS[bug.status].includes(next))
     return fail(res, 422, `Cannot move a bug from ${bug.status} to ${next}.`)
