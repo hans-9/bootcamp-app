@@ -135,6 +135,11 @@ export default function BugDetailPage() {
             <Field label="Actual">{bug.actual || <span className="muted">—</span>}</Field>
           </div>
           <Field label="Environment">{bug.environment || <span className="muted">—</span>}</Field>
+          {bug.github_issue_url && (
+            <Field label="GitHub Issue">
+              <a href={bug.github_issue_url} target="_blank" rel="noreferrer">{bug.github_issue_url}</a>
+            </Field>
+          )}
         </div>
 
         <div className="card bug-side">
