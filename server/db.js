@@ -13,6 +13,8 @@ export const STATUSES = ['draft', 'ready', 'passed', 'failed', 'skipped']
 export const SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', 'failed']
 export const BUG_STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened']
 export const BUG_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
+export const RUN_STATUSES = ['running', 'passed', 'failed']
+export const RESULT_STATUSES = ['passed', 'failed', 'skipped']
 
 // Rank used for "sort by severity" — higher number = more severe, so
 // ORDER BY rank DESC puts Critical first (matches "updated DESC = newest first").
@@ -83,6 +85,35 @@ db.exec(`
   )
 `)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS test_runs_v2 (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    suite_id    INTEGER NOT NULL REFERENCES test_suites(id) ON DELETE CASCADE,
+    status      TEXT NOT NULL DEFAULT 'running',
+    pass_count  INTEGER NOT NULL DEFAULT 0,
+    fail_count  INTEGER NOT NULL DEFAULT 0,
+    skip_count  INTEGER NOT NULL DEFAULT 0,
+    start_time  TEXT NOT NULL,
+    end_time    TEXT,
+    created_by  TEXT NOT NULL DEFAULT ''
+  )
+`)
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS test_run_results (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id       INTEGER NOT NULL REFERENCES test_runs_v2(id) ON DELETE CASCADE,
+    test_case_id INTEGER NOT NULL,
+    case_title   TEXT NOT NULL DEFAULT '',
+    result       TEXT,
+    duration_ms  INTEGER,
+    notes        TEXT NOT NULL DEFAULT '',
+    failed_at    TEXT,
+    issue_url    TEXT,
+    sort_order   INTEGER NOT NULL DEFAULT 0
+  )
+`)
+
 // Seed once, only when the table is empty.
 const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get()
 if (count === 0) seed()
@@ -92,6 +123,9 @@ if (suiteCount === 0) seedSuites()
 
 const { bugCount } = db.prepare('SELECT COUNT(*) AS bugCount FROM bugs').get()
 if (bugCount === 0) seedBugs()
+
+const { runCount } = db.prepare('SELECT COUNT(*) AS runCount FROM test_runs_v2').get()
+if (runCount === 0) seedRuns()
 
 function seed() {
   const now = new Date().toISOString()
@@ -297,6 +331,58 @@ function seedBugs() {
     })
   })
   seedAll(bugs)
+}
+
+function seedRuns() {
+  const suite = db.prepare('SELECT id FROM test_suites ORDER BY id LIMIT 1').get()
+  if (!suite) return
+
+  const cases = db
+    .prepare(`
+      SELECT tc.id, tc.title, sc.sort_order
+      FROM suite_cases sc
+      JOIN test_cases tc ON tc.id = sc.case_id
+      WHERE sc.suite_id = ?
+      ORDER BY sc.sort_order, sc.id
+    `)
+    .all(suite.id)
+  if (cases.length === 0) return
+
+  const startTime = '2026-06-14T10:00:00.000Z'
+  const endTime = '2026-06-14T10:22:00.000Z'
+  const failedAt = '2026-06-14T10:15:00.000Z'
+
+  const resultMap = [
+    { result: 'passed', notes: '', failed_at: null, issue_url: null },
+    {
+      result: 'failed',
+      notes: 'Login button required two clicks before submitting the form.',
+      failed_at: failedAt,
+      issue_url: 'https://github.com/example/repo/issues/42',
+    },
+    { result: 'skipped', notes: 'Deferred — depends on session fix in next sprint.', failed_at: null, issue_url: null },
+  ]
+
+  const passCount = resultMap.filter((r) => r.result === 'passed').length
+  const failCount = resultMap.filter((r) => r.result === 'failed').length
+  const skipCount = resultMap.filter((r) => r.result === 'skipped').length
+
+  db.transaction(() => {
+    const { lastInsertRowid: runId } = db
+      .prepare(`
+        INSERT INTO test_runs_v2 (suite_id, status, pass_count, fail_count, skip_count, start_time, end_time, created_by)
+        VALUES (?, 'failed', ?, ?, ?, ?, ?, 'demo')
+      `)
+      .run(suite.id, passCount, failCount, skipCount, startTime, endTime)
+
+    const insertResult = db.prepare(
+      'INSERT INTO test_run_results (run_id, test_case_id, case_title, result, notes, failed_at, issue_url, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    )
+    cases.forEach((c, i) => {
+      const r = resultMap[i] ?? { result: 'skipped', notes: '', failed_at: null, issue_url: null }
+      insertResult.run(runId, c.id, c.title, r.result, r.notes, r.failed_at, r.issue_url, i)
+    })
+  })()
 }
 
 export default db
