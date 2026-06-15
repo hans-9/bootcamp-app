@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.2.0] — 2026-06-15
+
+### Added
+- Test run executor: start a run from any test suite, step through each case, record a result (pass/fail/skip) and notes per step, and view a summary when the run is complete.
+- GitHub issue link on the bug detail card.
+
+### Fixed
+- Completed run results are locked so they cannot be edited after the run closes; navigating away while notes are unsaved now shows a warning.
+- The results table is hidden during loading and when there are no results, instead of rendering an empty shell.
+- Navigating away from a run in progress resets the start-run state so it does not carry over to the next run.
+- Critical and major server-side issues surfaced in QA review are resolved.
+
+[Internal: 5 tooling and config commits were omitted from these notes.]
+
 ## [v1.1.0] — 2026-06-14
 
 ### Added
