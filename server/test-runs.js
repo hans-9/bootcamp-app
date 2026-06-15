@@ -45,26 +45,36 @@ function recomputeRunCounts(runId) {
 
 const GITHUB_REPO = 'hans-9/bootcamp-app'
 
-async function createGithubIssue(title, body) {
+async function githubFetch(path, method, body) {
   const token = process.env.GITHUB_MCP_TOKEN
   if (!token) return null
   try {
-    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/issues`, {
-      method: 'POST',
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}${path}`, {
+      method,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ title, body }),
+      body: JSON.stringify(body),
     })
     if (!res.ok) return null
-    const data = await res.json()
-    return data.html_url
+    return await res.json()
   } catch {
     return null
   }
+}
+
+async function createGithubIssue(title, body) {
+  const data = await githubFetch('/issues', 'POST', { title, body })
+  return data?.html_url ?? null
+}
+
+async function addGithubIssueComment(issueUrl, body) {
+  const match = issueUrl.match(/\/issues\/(\d+)$/)
+  if (!match) return
+  await githubFetch(`/issues/${match[1]}/comments`, 'POST', { body })
 }
 
 export function handleListRuns(req, res) {
@@ -120,24 +130,36 @@ export function handleCreateRun(req, res) {
 }
 
 export function handleGetRun(req, res) {
-  const run = getRunWithResults(req.params.id)
+  const id = Number(req.params.id)
+  if (!Number.isInteger(id) || id <= 0) return fail(res, 400, 'Invalid run id.')
+  const run = getRunWithResults(id)
   if (!run) return fail(res, 404, 'Run not found.')
   ok(res, run)
 }
 
 export async function handleUpdateResult(req, res) {
-  const { id, resultId } = req.params
+  const id = Number(req.params.id)
+  const resultId = Number(req.params.resultId)
+  if (!Number.isInteger(id) || id <= 0) return fail(res, 400, 'Invalid run id.')
+  if (!Number.isInteger(resultId) || resultId <= 0) return fail(res, 400, 'Invalid result id.')
 
   const result = String(req.body.result ?? '').trim()
   if (!RESULT_STATUSES.includes(result))
     return fail(res, 400, `result must be one of: ${RESULT_STATUSES.join(', ')}.`)
 
   const notes = String(req.body.notes ?? '').trim()
-  const rawDuration = req.body.duration_ms
-  const duration_ms = rawDuration != null ? Number(rawDuration) : null
 
-  const run = db.prepare('SELECT id FROM test_runs_v2 WHERE id = ?').get(id)
+  const rawDuration = req.body.duration_ms
+  let duration_ms = null
+  if (rawDuration != null) {
+    duration_ms = Number(rawDuration)
+    if (!Number.isInteger(duration_ms) || duration_ms < 0)
+      return fail(res, 400, 'duration_ms must be a non-negative integer.')
+  }
+
+  const run = db.prepare('SELECT * FROM test_runs_v2 WHERE id = ?').get(id)
   if (!run) return fail(res, 404, 'Run not found.')
+  if (run.status !== 'running') return fail(res, 409, 'Run is already closed.')
 
   const existing = db
     .prepare('SELECT * FROM test_run_results WHERE id = ? AND run_id = ?')
@@ -146,20 +168,31 @@ export async function handleUpdateResult(req, res) {
 
   const now = new Date().toISOString()
 
-  let issueUrl = existing.issue_url
-  if (result === 'failed' && !issueUrl) {
-    issueUrl = await createGithubIssue(
-      `Test failed: ${existing.case_title}`,
-      notes || 'No failure notes provided.',
-    )
-  }
-
+  // Write to DB first — GitHub call fires only after the record is safe.
   db.prepare(
     `UPDATE test_run_results
-     SET result = ?, notes = ?, duration_ms = ?, failed_at = ?, issue_url = ?
+     SET result = ?, notes = ?, duration_ms = ?, failed_at = ?
      WHERE id = ?`,
-  ).run(result, notes, duration_ms, result === 'failed' ? now : null, issueUrl, resultId)
+  ).run(result, notes, duration_ms, result === 'failed' ? now : null, resultId)
 
-  recomputeRunCounts(Number(id))
-  ok(res, getRunWithResults(Number(id)))
+  recomputeRunCounts(id)
+
+  if (result === 'failed') {
+    if (!existing.issue_url) {
+      const issueUrl = await createGithubIssue(
+        `Test failed: ${existing.case_title}`,
+        notes || 'No failure notes provided.',
+      )
+      if (issueUrl) {
+        db.prepare('UPDATE test_run_results SET issue_url = ? WHERE id = ?').run(issueUrl, resultId)
+      }
+    } else {
+      await addGithubIssueComment(
+        existing.issue_url,
+        `**Re-failed:** ${notes || 'No failure notes provided.'}`,
+      )
+    }
+  }
+
+  ok(res, getRunWithResults(id))
 }
