@@ -25,6 +25,12 @@ import {
   handleChangeBugStatus,
   handleAddBugComment,
 } from './bugs.js'
+import {
+  handleListRuns,
+  handleCreateRun,
+  handleGetRun,
+  handleUpdateResult,
+} from './test-runs.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -57,6 +63,11 @@ app.put('/api/bugs/:id', handleUpdateBug)
 app.delete('/api/bugs/:id', handleDeleteBug)
 app.patch('/api/bugs/:id/status', handleChangeBugStatus)
 app.post('/api/bugs/:id/comments', handleAddBugComment)
+
+app.get('/api/test-runs', handleListRuns)
+app.post('/api/test-runs', handleCreateRun)
+app.get('/api/test-runs/:id', handleGetRun)
+app.patch('/api/test-runs/:id/results/:resultId', handleUpdateResult)
 
 // Unmatched API routes still return the { success, data, error } shape.
 app.use('/api', (req, res) => {
