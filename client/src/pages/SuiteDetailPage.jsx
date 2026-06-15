@@ -116,6 +116,7 @@ export default function SuiteDetailPage() {
     setStartingRun(true)
     try {
       const run = await createRun(Number(id))
+      setStartingRun(false)
       navigate(`/test-runs/${run.id}`)
     } catch (err) {
       window.alert(err.message)
