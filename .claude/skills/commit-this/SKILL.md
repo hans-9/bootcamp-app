@@ -43,7 +43,7 @@ Per this repo's Commit Messages convention:
 - Add a body (a second `-m`) when the *why* isn't obvious from the subject — wrap at ~72 cols, explain what changed and why, not how.
 - **Never** add a `Co-Authored-By` trailer or any AI-attribution line.
 
-**Offer three commit message suggestions and let the user choose** before committing — for *each* commit when there are several. Make the first option your recommendation.
+**Determine the commit type yourself** based on the nature of the change — do not offer it as a variable across suggestions. All three suggestions must use the same type. Only the description should vary across the three options. Make the first option your recommendation.
 
 ## 5. Commit and verify
 
