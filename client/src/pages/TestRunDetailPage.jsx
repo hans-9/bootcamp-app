@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getRun, updateRunResult } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
@@ -25,6 +25,7 @@ export default function TestRunDetailPage() {
   const [error, setError] = useState(null)
   const [notes, setNotes] = useState({})
   const [saving, setSaving] = useState(new Set())
+  const savedNotes = useRef({})
 
   useEffect(() => {
     setLoading(true)
@@ -35,10 +36,20 @@ export default function TestRunDetailPage() {
         const initial = {}
         data.results.forEach((r) => { initial[r.id] = r.notes })
         setNotes(initial)
+        savedNotes.current = initial
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  const hasUnsavedNotes = Object.keys(notes).some((k) => notes[k] !== savedNotes.current[k])
+
+  useEffect(() => {
+    if (!hasUnsavedNotes) return
+    const handler = (e) => { e.preventDefault() }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [hasUnsavedNotes])
 
   async function handleSetResult(resultId, result) {
     setSaving((prev) => new Set(prev).add(resultId))
@@ -51,6 +62,7 @@ export default function TestRunDetailPage() {
       const next = {}
       updated.results.forEach((r) => { next[r.id] = r.notes })
       setNotes(next)
+      savedNotes.current = next
     } catch (err) {
       window.alert(err.message)
     } finally {
@@ -66,6 +78,7 @@ export default function TestRunDetailPage() {
   if (error) return <div className="container"><div className="empty">Error: {error}</div></div>
   if (!run) return null
 
+  const isClosed = run.status !== 'running'
   const total = run.results.length
   const done = run.results.filter((r) => r.result !== null).length
 
@@ -91,12 +104,18 @@ export default function TestRunDetailPage() {
       </div>
 
       <div className="card">
+        {isClosed && (
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--muted)', fontSize: 13 }}>
+            This run is complete — results are locked.
+          </div>
+        )}
         {run.results.length === 0 ? (
           <div className="empty">No test cases in this run.</div>
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {run.results.map((r, i) => {
               const isSaving = saving.has(r.id)
+              const isDisabled = isSaving || isClosed
               const resultColor = r.result ? RESULT_COLORS[r.result] : undefined
               return (
                 <li
@@ -154,7 +173,7 @@ export default function TestRunDetailPage() {
                           setNotes((prev) => ({ ...prev, [r.id]: e.target.value }))
                         }
                         rows={2}
-                        disabled={isSaving}
+                        disabled={isDisabled}
                         style={{
                           width: '100%',
                           marginBottom: 8,
@@ -174,7 +193,7 @@ export default function TestRunDetailPage() {
                           <button
                             key={res}
                             className="btn btn-sm"
-                            disabled={isSaving}
+                            disabled={isDisabled}
                             onClick={() => handleSetResult(r.id, res)}
                             style={{
                               color: r.result === res ? RESULT_COLORS[res] : undefined,
