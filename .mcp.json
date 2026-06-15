@@ -1,5 +1,12 @@
 {
   "mcpServers": {
+    "discord": {
+      "command": "node",
+      "args": ["/Users/hanscaceres/Documents/tdl_courses/2026/discordmcp/build/index.js"],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_BOT_TOKEN}"
+      }
+    },
     "github": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",
