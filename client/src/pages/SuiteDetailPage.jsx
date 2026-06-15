@@ -7,6 +7,7 @@ import {
   addCaseToSuite,
   removeCaseFromSuite,
   reorderSuiteCases,
+  createRun,
 } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
 import SeverityBadge from '../components/SeverityBadge.jsx'
@@ -24,6 +25,7 @@ export default function SuiteDetailPage() {
   const [editing, setEditing] = useState(false)
   const [adding, setAdding] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
+  const [startingRun, setStartingRun] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -110,6 +112,17 @@ export default function SuiteDetailPage() {
     persistOrder(next)
   }
 
+  async function handleNewRun() {
+    setStartingRun(true)
+    try {
+      const run = await createRun(Number(id))
+      navigate(`/test-runs/${run.id}`)
+    } catch (err) {
+      window.alert(err.message)
+      setStartingRun(false)
+    }
+  }
+
   async function persistOrder(order) {
     try {
       const data = await reorderSuiteCases(id, order.map((c) => c.id))
@@ -139,6 +152,9 @@ export default function SuiteDetailPage() {
           </div>
         </div>
         <div className="head-actions">
+          <button className="btn btn-primary" onClick={handleNewRun} disabled={startingRun}>
+            {startingRun ? 'Starting…' : '▶ New Run'}
+          </button>
           <button className="btn" onClick={() => setEditing(true)}>Edit</button>
           <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
         </div>

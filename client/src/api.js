@@ -98,3 +98,19 @@ export const changeBugStatus = (id, status, message, updatedAt) =>
 
 export const addBugComment = (id, message) =>
   request(`/api/bugs/${id}/comments`, { method: 'POST', body: JSON.stringify({ message }) })
+
+export const listRuns = () => request('/api/test-runs')
+
+export const getRun = (id) => request(`/api/test-runs/${id}`)
+
+export const createRun = (suiteId, createdBy = '') =>
+  request('/api/test-runs', {
+    method: 'POST',
+    body: JSON.stringify({ suite_id: suiteId, created_by: createdBy }),
+  })
+
+export const updateRunResult = (runId, resultId, payload) =>
+  request(`/api/test-runs/${runId}/results/${resultId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })

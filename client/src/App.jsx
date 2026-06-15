@@ -4,6 +4,8 @@ import TestSuitesPage from './pages/TestSuitesPage.jsx'
 import SuiteDetailPage from './pages/SuiteDetailPage.jsx'
 import BugsPage from './pages/BugsPage.jsx'
 import BugDetailPage from './pages/BugDetailPage.jsx'
+import TestRunsPage from './pages/TestRunsPage.jsx'
+import TestRunDetailPage from './pages/TestRunDetailPage.jsx'
 
 export default function App() {
   return (
@@ -18,6 +20,7 @@ export default function App() {
           <NavLink to="/test-cases">Test Cases</NavLink>
           <NavLink to="/test-suites">Test Suites</NavLink>
           <NavLink to="/bugs">Bugs</NavLink>
+          <NavLink to="/test-runs">Test Runs</NavLink>
         </nav>
       </header>
       <Routes>
@@ -27,6 +30,8 @@ export default function App() {
         <Route path="/test-suites/:id" element={<SuiteDetailPage />} />
         <Route path="/bugs" element={<BugsPage />} />
         <Route path="/bugs/:id" element={<BugDetailPage />} />
+        <Route path="/test-runs" element={<TestRunsPage />} />
+        <Route path="/test-runs/:id" element={<TestRunDetailPage />} />
       </Routes>
     </>
   )

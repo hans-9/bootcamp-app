@@ -26,6 +26,8 @@
   --st-resolved:    #1f9d57;
   --st-closed:      #6b7785;
   --st-reopened:    #8a3ffc;
+  --st-running:     #2f6feb;
+  --st-pending:     #6b7785;
 }
 
 * { box-sizing: border-box; }
@@ -133,6 +135,8 @@ th .arrow { font-size: 10px; margin-left: 4px; }
 .st-resolved    { color: var(--st-resolved); }    .st-resolved .dot    { background: var(--st-resolved); }
 .st-closed      { color: var(--st-closed); }      .st-closed .dot      { background: var(--st-closed); }
 .st-reopened    { color: var(--st-reopened); }    .st-reopened .dot    { background: var(--st-reopened); }
+.st-running     { color: var(--st-running); }     .st-running .dot     { background: var(--st-running); }
+.st-pending     { color: var(--st-pending); }     .st-pending .dot     { background: var(--st-pending); }
 
 .muted { color: var(--muted); }
 .empty { padding: 48px; text-align: center; color: var(--muted); }
