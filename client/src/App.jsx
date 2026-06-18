@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Link, NavLink } from 'react-router-dom'
+import DashboardPage from './pages/DashboardPage.jsx'
 import TestCasesPage from './pages/TestCasesPage.jsx'
 import TestSuitesPage from './pages/TestSuitesPage.jsx'
 import SuiteDetailPage from './pages/SuiteDetailPage.jsx'
@@ -17,6 +18,7 @@ export default function App() {
           </Link>
         </h1>
         <nav className="app-nav">
+          <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/test-cases">Test Cases</NavLink>
           <NavLink to="/test-suites">Test Suites</NavLink>
           <NavLink to="/bugs">Bugs</NavLink>
@@ -24,7 +26,8 @@ export default function App() {
         </nav>
       </header>
       <Routes>
-        <Route path="/" element={<Navigate to="/test-cases" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCasesPage />} />
         <Route path="/test-suites" element={<TestSuitesPage />} />
         <Route path="/test-suites/:id" element={<SuiteDetailPage />} />

@@ -251,3 +251,51 @@ tbody tr.clickable { cursor: pointer; }
 .timeline-note { margin-top: 2px; }
 .timeline-time { font-size: 12px; margin-top: 2px; }
 .timeline-comment { white-space: pre-wrap; }
+
+/* dashboard */
+.metric-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;
+}
+.metric-card { padding: 18px 20px; }
+.metric-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
+.metric-value-empty { color: var(--muted); font-weight: 500; }
+.metric-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.metric-hint { color: var(--muted); font-size: 11px; margin-top: 2px; opacity: .8; }
+
+.stale-badge {
+  font-size: 12px; font-weight: 600; color: var(--sev-major-fg);
+  background: var(--sev-major-bg); padding: 3px 10px; border-radius: 999px;
+}
+
+.clickable[role="link"]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 6px;
+}
+
+.dash-columns { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+.dash-panel { overflow: hidden; }
+.dash-panel-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+}
+
+.activity-feed { list-style: none; margin: 0; padding: 6px 0; }
+.activity-item { display: flex; gap: 12px; padding: 10px 16px; align-items: flex-start; }
+.activity-item.clickable { cursor: pointer; }
+.activity-item.clickable:hover { background: #fafbfc; }
+.activity-body { display: flex; flex-direction: column; gap: 2px; }
+.activity-time { font-size: 12px; }
+
+.skeleton {
+  background: linear-gradient(90deg, #eef1f4 25%, #e3e6ea 37%, #eef1f4 63%);
+  background-size: 400% 100%; border-radius: 6px;
+  animation: skeleton-pulse 1.4s ease infinite;
+}
+.skeleton-value { height: 28px; width: 60%; margin-bottom: 8px; }
+.skeleton-label { height: 13px; width: 40%; }
+.skeleton-row { height: 16px; width: 100%; margin: 12px 0; }
+@keyframes skeleton-pulse { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+@media (max-width: 860px) {
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-columns { grid-template-columns: 1fr; }
+}

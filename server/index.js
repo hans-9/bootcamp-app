@@ -31,6 +31,7 @@ import {
   handleGetRun,
   handleUpdateResult,
 } from './routes/test-runs.js'
+import { handleGetMetrics } from './routes/dashboard.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -63,6 +64,8 @@ app.put('/api/bugs/:id', handleUpdateBug)
 app.delete('/api/bugs/:id', handleDeleteBug)
 app.patch('/api/bugs/:id/status', handleChangeBugStatus)
 app.post('/api/bugs/:id/comments', handleAddBugComment)
+
+app.get('/api/dashboard/metrics', handleGetMetrics)
 
 app.get('/api/test-runs', handleListRuns)
 app.post('/api/test-runs', handleCreateRun)

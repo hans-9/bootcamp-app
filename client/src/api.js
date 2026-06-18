@@ -99,6 +99,8 @@ export const changeBugStatus = (id, status, message, updatedAt) =>
 export const addBugComment = (id, message) =>
   request(`/api/bugs/${id}/comments`, { method: 'POST', body: JSON.stringify({ message }) })
 
+export const getDashboardMetrics = () => request('/api/dashboard/metrics')
+
 export const listRuns = () => request('/api/test-runs')
 
 export const getRun = (id) => request(`/api/test-runs/${id}`)
