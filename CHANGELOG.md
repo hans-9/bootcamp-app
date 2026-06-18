@@ -1,49 +1,47 @@
 # Changelog
 
+## [v1.3.0] — 2026-06-18
+
+### Added
+- A dashboard that opens to an at-a-glance overview: total test cases, pass rate, open bugs, and average run duration, alongside your most recent test runs and a feed of recent activity. The numbers stay current on their own, and you can jump straight to any run or bug from the list.
+
 ## [v1.2.0] — 2026-06-15
 
 ### Added
-- Test run executor: start a run from any test suite, step through each case, record a result (pass/fail/skip) and notes per step, and view a summary when the run is complete.
-- GitHub issue link on the bug detail card.
+- Run a test suite end to end: start a run, step through each case, mark it passed, failed, or skipped with notes as you go, and see a summary once the run is done.
+- A link to the related GitHub issue on each bug.
 
 ### Fixed
-- Completed run results are locked so they cannot be edited after the run closes; navigating away while notes are unsaved now shows a warning.
-- The results table is hidden during loading and when there are no results, instead of rendering an empty shell.
-- Navigating away from a run in progress resets the start-run state so it does not carry over to the next run.
-- Critical and major server-side issues surfaced in QA review are resolved.
-
-[Internal: 5 tooling and config commits were omitted from these notes.]
+- Finished runs are locked so their results can't be changed after the fact, and you're warned before leaving with unsaved notes.
+- The results list no longer shows an empty frame while loading or when there's nothing to show.
+- Leaving a run in progress no longer carries its state over into your next run.
+- Resolved the critical and major issues found in QA review.
 
 ## [v1.1.0] — 2026-06-14
 
 ### Added
-- Bug tracker: file bugs with description, severity, priority, steps, expected/actual results, and environment, and track each one through its activity log.
-- Bug status workflow that enforces the allowed transitions and rejects invalid status moves.
-- Bug list with status, severity, and priority filters, title and description search, and column sorting.
-- Bug pages at /bugs and /bugs/:id with a filter bar, sortable table, status dropdown, activity timeline, and a create/edit form.
+- Bug tracker: file bugs with a description, severity, priority, steps, expected and actual results, and environment, and follow each one through its activity history.
+- A bug status workflow that only allows valid transitions and blocks invalid ones.
+- Filter bugs by status, severity, and priority, search by title and description, and sort by any column.
 
 ### Fixed
-- Concurrent bug status changes are rejected when stale (409) and the client refetches to stay in sync, so one update no longer silently overwrites another.
-- Bug search now matches % and _ literally instead of treating them as wildcards.
-- The bug list now includes the previously missing priority filter.
-- Creating a bug no longer navigates to a broken page when the server returns no id.
-
-[Internal: 2 dev-tooling commits (comment-rule pre-commit hook) were omitted from these notes.]
+- When two people change a bug's status at once, the stale change is rejected and the page refreshes, so one update no longer quietly overwrites another.
+- Bug search now treats % and _ as ordinary characters instead of wildcards.
+- Added the missing priority filter to the bug list.
+- Creating a bug no longer lands you on a broken page.
 
 ## [v1.0.0] — 2026-06-14
 
 ### Added
-- Initial application: React + Vite client and Express API in an npm workspaces monorepo.
-- Test case management: create, list, view, edit, and delete test cases, with a paginated list page.
-- Duplicate-title warning on the create form when a case with the same title already exists (case-insensitive); duplicates are still allowed.
-- Test suite management: group test cases into ordered suites, with add, remove, and reorder support via drag-and-drop and keyboard up/down buttons.
+- First release of the test management app.
+- Create, view, edit, and delete test cases, browsed through a paginated list.
+- A warning when you create a test case whose title matches an existing one, while still letting you save it.
+- Group test cases into ordered suites, adding, removing, and reordering them by drag-and-drop or keyboard.
 
 ### Fixed
-- Reordering a suite now persists once and uses the server's returned order as the source of truth, instead of firing twice and discarding the response.
-- Adding a case already in a suite is handled as a quiet re-sync rather than an error.
-- The test-case list no longer fails entirely when one case has a corrupt steps value, and an out-of-range page now clamps to the last page.
-- Deleting a case lands you on the correct page after the count changes.
-- Saving a stale edit is rejected so concurrent changes are not silently overwritten.
-- Oversized request bodies now return a clearer error message.
-
-[Internal: 16 documentation, dependency, and QA-tooling commits were omitted from these notes.]
+- Reordering a suite now saves reliably and keeps the order the server confirms.
+- Adding a case that's already in a suite no longer shows an error.
+- A single corrupt test case no longer breaks the whole list, and opening a page past the end now lands on the last page.
+- Deleting a case keeps you on the right page afterward.
+- Saving an edit over someone else's newer change is rejected instead of silently overwriting it.
+- Oversized submissions now show a clearer error.
