@@ -5,7 +5,7 @@ import {
   handleCreateTestCase,
   handleUpdateTestCase,
   handleDeleteTestCase,
-} from './test-cases.js'
+} from './routes/test-cases.js'
 import {
   handleListSuites,
   handleGetSuite,
@@ -15,7 +15,7 @@ import {
   handleAddCaseToSuite,
   handleRemoveCaseFromSuite,
   handleReorderSuiteCases,
-} from './suites.js'
+} from './routes/suites.js'
 import {
   handleListBugs,
   handleGetBug,
@@ -24,13 +24,13 @@ import {
   handleDeleteBug,
   handleChangeBugStatus,
   handleAddBugComment,
-} from './bugs.js'
+} from './routes/bugs.js'
 import {
   handleListRuns,
   handleCreateRun,
   handleGetRun,
   handleUpdateResult,
-} from './test-runs.js'
+} from './routes/test-runs.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001

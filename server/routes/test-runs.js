@@ -1,4 +1,4 @@
-import db, { RESULT_STATUSES } from './db.js'
+import db, { RESULT_STATUSES } from '../db.js'
 
 const ok = (res, data) => res.json({ success: true, data, error: null })
 const fail = (res, status, message) =>

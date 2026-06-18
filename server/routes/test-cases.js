@@ -1,4 +1,4 @@
-import db, { SEVERITIES, STATUSES, SEVERITY_RANK } from './db.js'
+import db, { SEVERITIES, STATUSES, SEVERITY_RANK } from '../db.js'
 
 // ---- helpers ----
 

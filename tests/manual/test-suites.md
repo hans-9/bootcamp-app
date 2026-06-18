@@ -1,6 +1,6 @@
 # Manual Test Cases — Test Suites Feature
 
-Covers the `/test-suites` list and `/test-suites/:id` detail pages, the create/edit form, and the backend rules in `server/suites.js` and `server/db.js`.
+Covers the `/test-suites` list and `/test-suites/:id` detail pages, the create/edit form, and the backend rules in `server/routes/suites.js` and `server/db.js`.
 
 ## Assumptions
 

@@ -1,4 +1,4 @@
-import db, { SEVERITIES, BUG_STATUSES, BUG_PRIORITIES, SEVERITY_RANK, PRIORITY_RANK } from './db.js'
+import db, { SEVERITIES, BUG_STATUSES, BUG_PRIORITIES, SEVERITY_RANK, PRIORITY_RANK } from '../db.js'
 
 const ok = (res, data) => res.json({ success: true, data, error: null })
 const fail = (res, status, message) =>
