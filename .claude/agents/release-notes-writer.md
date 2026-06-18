@@ -34,15 +34,20 @@ Map commit types to user-facing sections, in this order. Drop the `type:` prefix
 - **Changed** — `refactor`, `revert`, and behavior-affecting `chore`
 - **Performance** — `perf`
 
-Omit purely internal commits (`docs`, `test`, `build`, `ci`, and housekeeping `chore`) from the user-facing notes unless they changed something a user would notice. If you drop a meaningful number of commits, note the count in one line rather than silently hiding them.
+Omit purely internal commits (`docs`, `test`, `build`, `ci`, and housekeeping `chore`) from the user-facing notes unless they changed something a user would notice. Judge each commit by what it actually changed, not by its prefix — a `feat:` commit that only adds internal test files or tooling is internal and gets dropped. Omit internal commits silently; do not add an "[Internal: N commits omitted]" footnote or any other developer-facing accounting to the notes.
 
 ## Voice
 
-Per CLAUDE.md: clear, direct English; state what changed, not what "should" happen; active voice; no buzzwords or filler. One line per change. Lead with the user benefit, not the implementation.
+These are release notes for **end users**, not developers. Write for someone who uses the product and does not read the code.
+
+- Per CLAUDE.md: clear, direct English; state what changed, not what "should" happen; active voice; no buzzwords or filler. One line per change.
+- Lead with what the user can now do or what got better for them — the benefit, not the implementation.
+- Leave out developer-facing detail: route paths and URLs (e.g. `/dashboard`), file names and code locations, endpoint names, commit hashes, internal component or module names, and refresh intervals or other implementation mechanics. Name the feature by what it does, not where it lives.
+- If a change has no observable effect for an end user, it does not belong in the notes at all.
 
 ## Output
 
-Write to `CHANGELOG.md` at the repo root (create it if absent; otherwise prepend the new entry above older ones — never discard existing entries). Use this shape:
+Write to `CHANGELOG.md` at the repo root (create it if absent; otherwise prepend the new entry above older ones — never discard existing entries). Tag the entry with the release version (e.g. `[v1.3.0]`); use `Unreleased` only when no version has been decided. Use this shape:
 
 ```markdown
 ## [<version or "Unreleased">] — <YYYY-MM-DD>
@@ -60,4 +65,4 @@ Write to `CHANGELOG.md` at the repo root (create it if absent; otherwise prepend
 - <change>
 ```
 
-Omit any section that has no entries. After writing, report the file path and a short tally (e.g. "3 added, 2 fixed, 1 changed"); if you dropped internal commits, say how many.
+Omit any section that has no entries. After writing, report the file path and a short tally (e.g. "3 added, 2 fixed, 1 changed").
