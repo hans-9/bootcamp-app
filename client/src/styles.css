@@ -298,4 +298,24 @@ tbody tr.clickable { cursor: pointer; }
 @media (max-width: 860px) {
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .dash-columns { grid-template-columns: 1fr; }
+  .report-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* reports */
+.report-summary {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;
+}
+.report-stat { padding: 14px 16px; }
+.report-stat-value { font-size: 26px; font-weight: 700; line-height: 1.2; }
+.report-stat-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+/* Print / Save as PDF — drop app chrome and on-screen controls for a clean page. */
+@media print {
+  .app-header, .no-print { display: none !important; }
+  .container { max-width: none; padding: 0; }
+  .card { box-shadow: none; border-color: #ccc; }
+  .report-summary { grid-template-columns: repeat(5, 1fr); }
+  .report-stat { break-inside: avoid; }
+  tr { break-inside: avoid; }
+  @page { margin: 16mm; }
 }

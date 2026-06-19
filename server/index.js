@@ -32,6 +32,12 @@ import {
   handleUpdateResult,
 } from './routes/test-runs.js'
 import { handleGetMetrics } from './routes/dashboard.js'
+import {
+  handleListReports,
+  handleGetReport,
+  handleCreateReport,
+  handleExportReportHtml,
+} from './routes/reports.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -71,6 +77,11 @@ app.get('/api/test-runs', handleListRuns)
 app.post('/api/test-runs', handleCreateRun)
 app.get('/api/test-runs/:id', handleGetRun)
 app.patch('/api/test-runs/:id/results/:resultId', handleUpdateResult)
+
+app.get('/api/reports', handleListReports)
+app.post('/api/reports', handleCreateReport)
+app.get('/api/reports/:id', handleGetReport)
+app.get('/api/reports/:id/export/html', handleExportReportHtml)
 
 // Unmatched API routes still return the { success, data, error } shape.
 app.use('/api', (req, res) => {

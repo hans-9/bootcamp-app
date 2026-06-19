@@ -114,6 +114,21 @@ db.exec(`
   )
 `)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS reports (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id        INTEGER NOT NULL,         -- source test_runs_v2 id (snapshot, no FK)
+    suite_name    TEXT NOT NULL,
+    run_date      TEXT NOT NULL,            -- copied from the run's start_time
+    total_count   INTEGER NOT NULL DEFAULT 0,
+    passed_count  INTEGER NOT NULL DEFAULT 0,
+    failed_count  INTEGER NOT NULL DEFAULT 0,
+    skipped_count INTEGER NOT NULL DEFAULT 0,
+    results       TEXT NOT NULL,            -- JSON array of per-case outcomes
+    generated_at  TEXT NOT NULL
+  )
+`)
+
 // Seed once, only when the table is empty.
 const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get()
 if (count === 0) seed()
@@ -126,6 +141,9 @@ if (bugCount === 0) seedBugs()
 
 const { runCount } = db.prepare('SELECT COUNT(*) AS runCount FROM test_runs_v2').get()
 if (runCount === 0) seedRuns()
+
+const { reportCount } = db.prepare('SELECT COUNT(*) AS reportCount FROM reports').get()
+if (reportCount === 0) seedReports()
 
 function seed() {
   const now = new Date().toISOString()
@@ -383,6 +401,40 @@ function seedRuns() {
       insertResult.run(runId, c.id, c.title, r.result, r.notes, r.failed_at, r.issue_url, i)
     })
   })()
+}
+
+function seedReports() {
+  const run = db
+    .prepare(
+      `SELECT r.*, s.name AS suite_name
+       FROM test_runs_v2 r
+       JOIN test_suites s ON s.id = r.suite_id
+       ORDER BY r.id LIMIT 1`,
+    )
+    .get()
+  if (!run) return
+
+  const results = db
+    .prepare(
+      `SELECT test_case_id, case_title, result, duration_ms, notes, failed_at, issue_url
+       FROM test_run_results WHERE run_id = ? ORDER BY sort_order, id`,
+    )
+    .all(run.id)
+
+  db.prepare(
+    `INSERT INTO reports (run_id, suite_name, run_date, total_count, passed_count, failed_count, skipped_count, results, generated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    run.id,
+    run.suite_name,
+    run.start_time,
+    results.length,
+    run.pass_count,
+    run.fail_count,
+    run.skip_count,
+    JSON.stringify(results),
+    '2026-06-14T10:25:00.000Z',
+  )
 }
 
 export default db

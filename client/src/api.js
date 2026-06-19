@@ -116,3 +116,13 @@ export const updateRunResult = (runId, resultId, payload) =>
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
+
+export const listReports = () => request('/api/reports')
+
+export const getReport = (id) => request(`/api/reports/${id}`)
+
+export const createReport = (runId) =>
+  request('/api/reports', { method: 'POST', body: JSON.stringify({ run_id: runId }) })
+
+// The export endpoint streams a file (not the JSON envelope), so it is a plain URL.
+export const reportHtmlExportUrl = (id) => `/api/reports/${id}/export/html`

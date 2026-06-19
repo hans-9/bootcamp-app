@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { getRun, updateRunResult } from '../api.js'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { getRun, updateRunResult, createReport, listReports } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
 
 function formatDate(iso) {
@@ -20,11 +20,13 @@ const RESULT_COLORS = {
 
 export default function TestRunDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [run, setRun] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [notes, setNotes] = useState({})
   const [saving, setSaving] = useState(new Set())
+  const [generating, setGenerating] = useState(false)
   const savedNotes = useRef({})
 
   useEffect(() => {
@@ -74,6 +76,31 @@ export default function TestRunDetailPage() {
     }
   }
 
+  async function handleGenerateReport() {
+    setGenerating(true)
+    try {
+      const warnings = []
+      const pending = run.results.filter((r) => r.result === null).length
+      if (pending > 0)
+        warnings.push(`${pending} test case(s) are still pending and will be recorded as not run.`)
+      if (hasUnsavedNotes) warnings.push('Unsaved notes on this page will not be included.')
+      const existing = (await listReports()).filter((rep) => rep.run_id === Number(id))
+      if (existing.length > 0)
+        warnings.push(`A report already exists for this run (#${existing[0].id}).`)
+
+      if (warnings.length > 0 && !window.confirm(`${warnings.join('\n\n')}\n\nGenerate a new report anyway?`)) {
+        setGenerating(false)
+        return
+      }
+
+      const report = await createReport(Number(id))
+      navigate(`/reports/${report.id}`)
+    } catch (err) {
+      window.alert(err.message)
+      setGenerating(false)
+    }
+  }
+
   if (loading) return <div className="container"><div className="empty">Loading…</div></div>
   if (error) return <div className="container"><div className="empty">Error: {error}</div></div>
   if (!run) return null
@@ -100,6 +127,9 @@ export default function TestRunDetailPage() {
           <span style={{ color: 'var(--st-failed)', fontWeight: 600 }}>{run.fail_count} failed</span>
           <span style={{ color: 'var(--st-skipped)', fontWeight: 600 }}>{run.skip_count} skipped</span>
           <span className="muted">{done}/{total} done</span>
+          <button className="btn btn-primary" onClick={handleGenerateReport} disabled={generating}>
+            {generating ? 'Generating…' : 'Generate report'}
+          </button>
         </div>
       </div>
 
