@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   handleListTestCases,
+  handleExportTestCases,
   handleGetTestCase,
   handleCreateTestCase,
   handleUpdateTestCase,
@@ -60,6 +61,7 @@ app.post('/api/test-cases/import/preview', handleImportPreview)
 app.post('/api/test-cases/import/commit', handleImportCommit)
 
 app.get('/api/test-cases', handleListTestCases)
+app.get('/api/test-cases/export', handleExportTestCases)
 app.get('/api/test-cases/:id', handleGetTestCase)
 app.post('/api/test-cases', handleCreateTestCase)
 app.put('/api/test-cases/:id', handleUpdateTestCase)

@@ -5,6 +5,7 @@ import {
   createTestCase,
   updateTestCase,
   deleteTestCase,
+  testCasesExportUrl,
 } from '../api.js'
 import SeverityBadge from '../components/SeverityBadge.jsx'
 import StatusPill from '../components/StatusPill.jsx'
@@ -129,6 +130,13 @@ export default function TestCasesPage() {
       <div className="page-head">
         <h2>Test Cases</h2>
         <div style={{ display: 'flex', gap: 10 }}>
+          <a
+            className="btn"
+            href={testCasesExportUrl({ search, status, sort, dir })}
+            download="test-cases.csv"
+          >
+            Download CSV
+          </a>
           <Link to="/test-cases/import" className="btn">
             Import CSV
           </Link>

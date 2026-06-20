@@ -1,4 +1,19 @@
 import db, { SEVERITIES, STATUSES, SEVERITY_RANK } from '../db.js'
+import { toCsv } from '../csv.js'
+
+// Columns written to an exported CSV, in order. `steps` is joined one-per-line
+// so the file round-trips back through the import parser.
+const EXPORT_COLUMNS = [
+  'id',
+  'title',
+  'preconditions',
+  'steps',
+  'expected_result',
+  'severity',
+  'status',
+  'created_at',
+  'updated_at',
+]
 
 // Size caps that bound a single test case (and so every imported row too).
 const MAX_TITLE_LENGTH = 200
@@ -58,16 +73,14 @@ export function validate(body) {
   return { value: { title, preconditions, steps, expected_result, severity, status } }
 }
 
-// ---- handlers ----
-
-export function handleListTestCases(req, res) {
-  const requestedPage = Math.max(1, parseInt(req.query.page) || 1)
-  const perPage = 20
-  const search = String(req.query.search ?? '').trim()
-  const title = String(req.query.title ?? '').trim()
-  const status = String(req.query.status ?? '').trim()
-  const sort = req.query.sort === 'severity' ? 'severity' : 'updated' // default: updated
-  const dir = req.query.dir === 'asc' ? 'ASC' : 'DESC' // default: desc
+// Build the WHERE/ORDER BY (and bound params) shared by list and export, so a
+// CSV export applies exactly the filters the user is looking at.
+function buildListFilter(query) {
+  const search = String(query.search ?? '').trim()
+  const title = String(query.title ?? '').trim()
+  const status = String(query.status ?? '').trim()
+  const sort = query.sort === 'severity' ? 'severity' : 'updated'
+  const dir = query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const where = []
   const params = {}
@@ -94,6 +107,16 @@ export function handleListTestCases(req, res) {
   const orderSql =
     sort === 'severity' ? `ORDER BY ${rankCase} ${dir}, updated_at DESC` : `ORDER BY updated_at ${dir}`
 
+  return { whereSql, orderSql, params }
+}
+
+// ---- handlers ----
+
+export function handleListTestCases(req, res) {
+  const requestedPage = Math.max(1, parseInt(req.query.page) || 1)
+  const perPage = 20
+  const { whereSql, orderSql, params } = buildListFilter(req.query)
+
   const { total } = db.prepare(`SELECT COUNT(*) AS total FROM test_cases ${whereSql}`).get(params)
   const totalPages = Math.max(1, Math.ceil(total / perPage))
   const page = Math.min(requestedPage, totalPages) // an out-of-range page returns the last page, not empty
@@ -110,6 +133,24 @@ export function handleListTestCases(req, res) {
     total,
     totalPages,
   })
+}
+
+export function handleExportTestCases(req, res) {
+  const { whereSql, orderSql, params } = buildListFilter(req.query)
+  const rows = db
+    .prepare(`SELECT * FROM test_cases ${whereSql} ${orderSql}`)
+    .all(params)
+    .map(serialize)
+
+  const data = rows.map((r) =>
+    EXPORT_COLUMNS.map((c) => (c === 'steps' ? r.steps.join('\n') : r[c])),
+  )
+  // The BOM makes Excel read the file as UTF-8; the import parser strips it.
+  const csv = '﻿' + toCsv(EXPORT_COLUMNS, data)
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', 'attachment; filename="test-cases.csv"')
+  res.send(csv)
 }
 
 export function handleGetTestCase(req, res) {

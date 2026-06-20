@@ -70,3 +70,14 @@ export function parseCsv(text) {
   const [headers, ...rows] = cleaned
   return { headers, rows }
 }
+
+const escapeCell = (value) => {
+  const s = String(value ?? '')
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+export function toCsv(headers, rows) {
+  const lines = [headers.map(escapeCell).join(',')]
+  for (const row of rows) lines.push(row.map(escapeCell).join(','))
+  return lines.join('\r\n')
+}

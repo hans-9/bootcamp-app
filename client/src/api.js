@@ -45,6 +45,17 @@ export const previewImport = (csv) =>
 export const commitImport = (csv) =>
   request('/api/test-cases/import/commit', { method: 'POST', body: JSON.stringify({ csv }) })
 
+// Streams a CSV file (not the JSON envelope), so it is a plain URL the browser downloads.
+export function testCasesExportUrl({ search, status, sort, dir } = {}) {
+  const qs = new URLSearchParams()
+  if (search) qs.set('search', search)
+  if (status) qs.set('status', status)
+  if (sort) qs.set('sort', sort)
+  if (dir) qs.set('dir', dir)
+  const query = qs.toString()
+  return `/api/test-cases/export${query ? `?${query}` : ''}`
+}
+
 export function listSuites({ status } = {}) {
   const qs = new URLSearchParams()
   if (status) qs.set('status', status)
