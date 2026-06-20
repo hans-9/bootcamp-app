@@ -39,6 +39,12 @@ export const updateTestCase = (id, payload) =>
 export const deleteTestCase = (id) =>
   request(`/api/test-cases/${id}`, { method: 'DELETE' })
 
+export const previewImport = (csv) =>
+  request('/api/test-cases/import/preview', { method: 'POST', body: JSON.stringify({ csv }) })
+
+export const commitImport = (csv) =>
+  request('/api/test-cases/import/commit', { method: 'POST', body: JSON.stringify({ csv }) })
+
 export function listSuites({ status } = {}) {
   const qs = new URLSearchParams()
   if (status) qs.set('status', status)

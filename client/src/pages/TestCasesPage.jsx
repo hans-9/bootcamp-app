@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   listTestCases,
   createTestCase,
@@ -127,9 +128,14 @@ export default function TestCasesPage() {
     <div className="container">
       <div className="page-head">
         <h2>Test Cases</h2>
-        <button className="btn btn-primary" onClick={() => setEditing(null)}>
-          + New test case
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link to="/test-cases/import" className="btn">
+            Import CSV
+          </Link>
+          <button className="btn btn-primary" onClick={() => setEditing(null)}>
+            + New test case
+          </button>
+        </div>
       </div>
 
       <div className="toolbar">

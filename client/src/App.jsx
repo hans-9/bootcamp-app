@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, Link, NavLink } from 'react-router-dom'
 import DashboardPage from './pages/DashboardPage.jsx'
 import TestCasesPage from './pages/TestCasesPage.jsx'
+import TestCaseImportPage from './pages/TestCaseImportPage.jsx'
 import TestSuitesPage from './pages/TestSuitesPage.jsx'
 import SuiteDetailPage from './pages/SuiteDetailPage.jsx'
 import BugsPage from './pages/BugsPage.jsx'
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCasesPage />} />
+        <Route path="/test-cases/import" element={<TestCaseImportPage />} />
         <Route path="/test-suites" element={<TestSuitesPage />} />
         <Route path="/test-suites/:id" element={<SuiteDetailPage />} />
         <Route path="/bugs" element={<BugsPage />} />

@@ -31,6 +31,7 @@ import {
   handleGetRun,
   handleUpdateResult,
 } from './routes/test-runs.js'
+import { handleImportPreview, handleImportCommit } from './routes/imports.js'
 import { handleGetMetrics, handleGetTrends } from './routes/dashboard.js'
 import {
   handleListReports,
@@ -42,11 +43,21 @@ import {
 const app = express()
 const PORT = process.env.PORT || 3001
 
-app.use(express.json({ limit: '100kb' }))
+// CSV import ships the whole file as JSON, so it gets a higher limit. The
+// global parser must skip these paths or it would cap them at 100kb first.
+const importJson = express.json({ limit: '5mb' })
+const standardJson = express.json({ limit: '100kb' })
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/test-cases/import/')) return importJson(req, res, next)
+  return standardJson(req, res, next)
+})
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, data: { status: 'ok' }, error: null })
 })
+
+app.post('/api/test-cases/import/preview', handleImportPreview)
+app.post('/api/test-cases/import/commit', handleImportCommit)
 
 app.get('/api/test-cases', handleListTestCases)
 app.get('/api/test-cases/:id', handleGetTestCase)
