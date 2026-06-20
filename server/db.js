@@ -35,6 +35,16 @@ db.exec(`
   )
 `)
 
+// Enforce case-insensitive unique titles. Wrapped because a DB created before
+// this rule could already hold duplicates, which would otherwise crash startup.
+try {
+  db.exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_test_cases_title_nocase ON test_cases (lower(title))`,
+  )
+} catch (err) {
+  console.warn('Skipping unique title index — existing duplicate titles found:', err.message)
+}
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS test_suites (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,

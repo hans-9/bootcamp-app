@@ -1,10 +1,18 @@
 import db, { SEVERITIES, STATUSES, SEVERITY_RANK } from '../db.js'
 
+// Size caps that bound a single test case (and so every imported row too).
+const MAX_TITLE_LENGTH = 200
+const MAX_TEXT_LENGTH = 2000 // preconditions, expected_result
+const MAX_STEPS = 50
+const MAX_STEP_LENGTH = 500
+
 // ---- helpers ----
 
 const ok = (res, data) => res.json({ success: true, data, error: null })
 const fail = (res, status, message) =>
   res.status(status).json({ success: false, data: null, error: message })
+
+const isUniqueViolation = (err) => String(err?.code).startsWith('SQLITE_CONSTRAINT')
 
 const serialize = (row) => {
   // A corrupt steps value degrades to [] instead of 500-ing the whole list.
@@ -18,7 +26,7 @@ const serialize = (row) => {
 }
 
 // Validate a create/update body. Returns { value } or { error }.
-function validate(body) {
+export function validate(body) {
   const title = String(body.title ?? '').trim()
   const preconditions = String(body.preconditions ?? '').trim() // optional
   const expected_result = String(body.expected_result ?? '').trim()
@@ -29,8 +37,19 @@ function validate(body) {
     : []
 
   if (!title) return { error: 'Title is required.' }
+  if (!/[\p{L}\p{N}]/u.test(title))
+    return { error: 'Title must contain at least one letter or number.' }
+  if (title.length > MAX_TITLE_LENGTH)
+    return { error: `Title must be ${MAX_TITLE_LENGTH} characters or fewer.` }
   if (steps.length === 0) return { error: 'At least one step is required.' }
+  if (steps.length > MAX_STEPS) return { error: `A test case can have at most ${MAX_STEPS} steps.` }
+  if (steps.some((s) => s.length > MAX_STEP_LENGTH))
+    return { error: `Each step must be ${MAX_STEP_LENGTH} characters or fewer.` }
   if (!expected_result) return { error: 'Expected result is required.' }
+  if (expected_result.length > MAX_TEXT_LENGTH)
+    return { error: `Expected result must be ${MAX_TEXT_LENGTH} characters or fewer.` }
+  if (preconditions.length > MAX_TEXT_LENGTH)
+    return { error: `Preconditions must be ${MAX_TEXT_LENGTH} characters or fewer.` }
   if (!SEVERITIES.includes(severity))
     return { error: `Severity must be one of: ${SEVERITIES.join(', ')}.` }
   if (!STATUSES.includes(status))
@@ -104,12 +123,18 @@ export function handleCreateTestCase(req, res) {
   if (error) return fail(res, 400, error)
 
   const now = new Date().toISOString()
-  const info = db
-    .prepare(
-      `INSERT INTO test_cases (title, preconditions, steps, expected_result, severity, status, created_at, updated_at)
-       VALUES (@title, @preconditions, @steps, @expected_result, @severity, @status, @created_at, @updated_at)`,
-    )
-    .run({ ...value, steps: JSON.stringify(value.steps), created_at: now, updated_at: now })
+  let info
+  try {
+    info = db
+      .prepare(
+        `INSERT INTO test_cases (title, preconditions, steps, expected_result, severity, status, created_at, updated_at)
+         VALUES (@title, @preconditions, @steps, @expected_result, @severity, @status, @created_at, @updated_at)`,
+      )
+      .run({ ...value, steps: JSON.stringify(value.steps), created_at: now, updated_at: now })
+  } catch (err) {
+    if (isUniqueViolation(err)) return fail(res, 409, 'A test case with this title already exists.')
+    throw err
+  }
 
   const row = db.prepare('SELECT * FROM test_cases WHERE id = ?').get(info.lastInsertRowid)
   res.status(201).json({ success: true, data: serialize(row), error: null })
@@ -125,18 +150,23 @@ export function handleUpdateTestCase(req, res) {
   const { value, error } = validate(req.body)
   if (error) return fail(res, 400, error)
 
-  db.prepare(
-    `UPDATE test_cases
-       SET title = @title, preconditions = @preconditions, steps = @steps,
-           expected_result = @expected_result, severity = @severity, status = @status,
-           updated_at = @updated_at
-     WHERE id = @id`,
-  ).run({
-    ...value,
-    steps: JSON.stringify(value.steps),
-    updated_at: new Date().toISOString(),
-    id: req.params.id,
-  })
+  try {
+    db.prepare(
+      `UPDATE test_cases
+         SET title = @title, preconditions = @preconditions, steps = @steps,
+             expected_result = @expected_result, severity = @severity, status = @status,
+             updated_at = @updated_at
+       WHERE id = @id`,
+    ).run({
+      ...value,
+      steps: JSON.stringify(value.steps),
+      updated_at: new Date().toISOString(),
+      id: req.params.id,
+    })
+  } catch (err) {
+    if (isUniqueViolation(err)) return fail(res, 409, 'A test case with this title already exists.')
+    throw err
+  }
 
   const row = db.prepare('SELECT * FROM test_cases WHERE id = ?').get(req.params.id)
   ok(res, serialize(row))
