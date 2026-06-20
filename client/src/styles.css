@@ -271,6 +271,11 @@ tbody tr.clickable { cursor: pointer; }
   outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 6px;
 }
 
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-card { overflow: hidden; }
+.chart-wide { grid-column: 1 / -1; }
+.chart-body { padding: 12px 14px 6px; }
+
 .dash-columns { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
 .dash-panel { overflow: hidden; }
 .dash-panel-head {
@@ -293,10 +298,13 @@ tbody tr.clickable { cursor: pointer; }
 .skeleton-value { height: 28px; width: 60%; margin-bottom: 8px; }
 .skeleton-label { height: 13px; width: 40%; }
 .skeleton-row { height: 16px; width: 100%; margin: 12px 0; }
+.skeleton-chart { height: 240px; width: 100%; }
 @keyframes skeleton-pulse { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
 @media (max-width: 860px) {
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-wide { grid-column: auto; }
   .dash-columns { grid-template-columns: 1fr; }
   .report-summary { grid-template-columns: repeat(2, 1fr); }
 }

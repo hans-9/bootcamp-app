@@ -101,6 +101,8 @@ export const addBugComment = (id, message) =>
 
 export const getDashboardMetrics = () => request('/api/dashboard/metrics')
 
+export const getDashboardTrends = () => request('/api/dashboard/trends')
+
 export const listRuns = () => request('/api/test-runs')
 
 export const getRun = (id) => request(`/api/test-runs/${id}`)

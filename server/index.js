@@ -31,7 +31,7 @@ import {
   handleGetRun,
   handleUpdateResult,
 } from './routes/test-runs.js'
-import { handleGetMetrics } from './routes/dashboard.js'
+import { handleGetMetrics, handleGetTrends } from './routes/dashboard.js'
 import {
   handleListReports,
   handleGetReport,
@@ -72,6 +72,7 @@ app.patch('/api/bugs/:id/status', handleChangeBugStatus)
 app.post('/api/bugs/:id/comments', handleAddBugComment)
 
 app.get('/api/dashboard/metrics', handleGetMetrics)
+app.get('/api/dashboard/trends', handleGetTrends)
 
 app.get('/api/test-runs', handleListRuns)
 app.post('/api/test-runs', handleCreateRun)

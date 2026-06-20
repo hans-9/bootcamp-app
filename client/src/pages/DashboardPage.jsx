@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDashboardMetrics } from '../api.js'
+import { getDashboardMetrics, getDashboardTrends } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
+
+// Charts pull in Recharts (+ D3); load that chunk only when the dashboard renders.
+const DashboardCharts = lazy(() => import('../components/DashboardCharts.jsx'))
 
 const REFRESH_MS = 30000
 
@@ -59,6 +62,8 @@ function navProps(navigate, to) {
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
+  const [trends, setTrends] = useState(null)
+  const [trendsError, setTrendsError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [updatedAt, setUpdatedAt] = useState(null)
@@ -69,18 +74,27 @@ export default function DashboardPage() {
     let cancelled = false
 
     const load = () => {
-      getDashboardMetrics()
-        .then((d) => {
+      // Charts are additive — a trends failure must not blank a working dashboard,
+      // so the two requests succeed or fail independently.
+      Promise.allSettled([getDashboardMetrics(), getDashboardTrends()])
+        .then(([metricsResult, trendsResult]) => {
           if (cancelled) return
-          setData(d)
-          setError(null)
-          setStale(false)
-          setUpdatedAt(new Date().toISOString())
-        })
-        .catch((err) => {
-          if (cancelled) return
-          if (initialLoad.current) setError(err.message)
-          else setStale(true)
+          if (metricsResult.status === 'fulfilled') {
+            setData(metricsResult.value)
+            setError(null)
+            setStale(false)
+            setUpdatedAt(new Date().toISOString())
+          } else if (initialLoad.current) {
+            setError(metricsResult.reason.message)
+          } else {
+            setStale(true)
+          }
+          if (trendsResult.status === 'fulfilled') {
+            setTrends(trendsResult.value)
+            setTrendsError(false)
+          } else {
+            setTrendsError(true)
+          }
         })
         .finally(() => {
           if (cancelled) return
@@ -161,6 +175,16 @@ export default function DashboardPage() {
         />
       </div>
 
+      {trends ? (
+        <Suspense fallback={<div className="charts-grid"><ChartsFallback /></div>}>
+          <DashboardCharts trends={trends} />
+        </Suspense>
+      ) : trendsError ? (
+        <div className="card">
+          <div className="empty">Couldn’t load the charts. Retrying every 30s.</div>
+        </div>
+      ) : null}
+
       <div className="dash-columns">
         <div className="card dash-panel">
           <div className="dash-panel-head">Recent test runs</div>
@@ -228,6 +252,25 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function ChartsFallback() {
+  return (
+    <>
+      <div className="card chart-card chart-wide">
+        <div className="dash-panel-head">Pass-rate trend</div>
+        <div className="chart-body"><div className="skeleton skeleton-chart" /></div>
+      </div>
+      <div className="card chart-card">
+        <div className="dash-panel-head">Bugs opened vs. closed</div>
+        <div className="chart-body"><div className="skeleton skeleton-chart" /></div>
+      </div>
+      <div className="card chart-card">
+        <div className="dash-panel-head">Coverage by status</div>
+        <div className="chart-body"><div className="skeleton skeleton-chart" /></div>
+      </div>
+    </>
   )
 }
 
