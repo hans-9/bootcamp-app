@@ -25,6 +25,16 @@ Using only these read-only git commands (you have no other Bash access — never
 3. **Closed bug reports.** Read `tests/bugs/` and include bugs whose status is `resolved` or `closed`. Use each bug's title; cite the file as a repo-relative `tests/bugs/<file>.md` reference.
 4. **`CLAUDE.md`** — read it for the commit-type meanings and the project Voice, and read the existing `CHANGELOG.md` (if any) before writing so you append rather than overwrite.
 
+## Step 3 — recommend the release version (semver)
+
+Decide the version before writing — unless the task prompt already fixed one, in which case use it and skip this step. Derive a recommendation from the parsed commits using semantic versioning, bumping from the most recent tag (`git describe --tags --abbrev=0`; if there are no tags, the first release is `v1.0.0`):
+
+- **Major** (`X+1.0.0`) — a commit marks a breaking change: a `!` after the type (e.g. `feat!:`) or a `BREAKING CHANGE:` line in the body. Also treat as breaking any change that removes or incompatibly alters existing user-facing behavior (e.g. rejecting input that used to be accepted), even when unmarked.
+- **Minor** (`x.Y+1.0`) — at least one `feat`, and no breaking change.
+- **Patch** (`x.y.Z+1`) — only `fix`/`perf` and resolved bugs; no `feat` and no breaking change.
+
+Present the recommended version with one line of reasoning (e.g. "minor — adds quick search, nothing breaking") and **confirm with the user before writing**. If you find a breaking change, say so explicitly and recommend the major bump — never bury it under a minor. The user makes the final call; you never tag or otherwise mutate the repo.
+
 ## How to group
 
 Map commit types to user-facing sections, in this order. Drop the `type:` prefix and rewrite each subject as a plain, past-tense, user-facing line:
@@ -47,7 +57,7 @@ These are release notes for **end users**, not developers. Write for someone who
 
 ## Output
 
-Write to `CHANGELOG.md` at the repo root (create it if absent; otherwise prepend the new entry above older ones — never discard existing entries). Tag the entry with the release version (e.g. `[v1.3.0]`); use `Unreleased` only when no version has been decided. Use this shape:
+Write to `CHANGELOG.md` at the repo root (create it if absent; otherwise prepend the new entry above older ones — never discard existing entries). Label the entry with the version confirmed in Step 3 (e.g. `[v1.3.0]`); use `Unreleased` only if no version was decided. Use this shape:
 
 ```markdown
 ## [<version or "Unreleased">] — <YYYY-MM-DD>
