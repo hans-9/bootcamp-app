@@ -100,7 +100,11 @@ export function ShortcutsProvider({ children }) {
 
   return (
     <ShortcutsContext.Provider
-      value={{ openSearch: () => setModal('search'), openHelp: () => setModal('help') }}
+      value={{
+        openSearch: () => setModal('search'),
+        openHelp: () => setModal('help'),
+        modalOpen: modal !== null,
+      }}
     >
       {children}
       {modal === 'search' && <QuickSearchModal onClose={close} />}

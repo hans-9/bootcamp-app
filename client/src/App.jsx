@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Routes, Route, Navigate, Link, NavLink, useLocation } from 'react-router-dom'
 import DashboardPage from './pages/DashboardPage.jsx'
 import TestCasesPage from './pages/TestCasesPage.jsx'
@@ -42,18 +42,49 @@ function HeaderTools() {
 function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
+  const { modalOpen } = useShortcuts()
+  const navRef = useRef(null)
+  const toggleRef = useRef(null)
+
+  // The listeners mount with the open menu; this ref keeps modal state current
+  // for them without re-running the effect (which would re-trigger dismissal).
+  const modalOpenRef = useRef(modalOpen)
+  modalOpenRef.current = modalOpen
 
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
 
+  // Above the mobile breakpoint the panel and toggle are gone, so a lingering
+  // open state would re-show the menu on the next shrink. Clear it on the way up.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 769px)')
+    const onChange = (e) => {
+      if (e.matches) setMenuOpen(false)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
   useEffect(() => {
     if (!menuOpen) return
+    const node = navRef.current
+    const toggle = toggleRef.current
+
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') setMenuOpen(false)
+      // Defer Escape to the modal layer when a shortcuts modal sits on top.
+      if (e.key === 'Escape' && !modalOpenRef.current) setMenuOpen(false)
+    }
+    const onPointerDown = (e) => {
+      if (node.contains(e.target) || (toggle && toggle.contains(e.target))) return
+      setMenuOpen(false)
     }
     document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
   }, [menuOpen])
 
   return (
@@ -64,6 +95,7 @@ function SiteHeader() {
         </Link>
       </h1>
       <button
+        ref={toggleRef}
         type="button"
         className="nav-toggle"
         onClick={() => setMenuOpen((open) => !open)}
@@ -73,7 +105,7 @@ function SiteHeader() {
       >
         {menuOpen ? '✕' : '☰'}
       </button>
-      <nav id="primary-nav" className={menuOpen ? 'app-nav open' : 'app-nav'}>
+      <nav ref={navRef} id="primary-nav" className={menuOpen ? 'app-nav open' : 'app-nav'}>
         <NavLink to="/dashboard">Dashboard</NavLink>
         <NavLink to="/test-cases">Test Cases</NavLink>
         <NavLink to="/test-suites">Test Suites</NavLink>
