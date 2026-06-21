@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.4.0] — 2026-06-21
+
+### Added
+- Trend charts on the dashboard: pass rate over your recent runs, bugs opened versus closed each week, and test-case coverage by status.
+- A reports page you can print or save as a standalone HTML file.
+- Import test cases from a CSV file, with a per-row preview that flags invalid or duplicate rows before you commit the valid ones.
+- Export your test cases to CSV, covering every case that matches your current filters rather than just the page you're viewing.
+- A preferences and settings page.
+
+### Changed
+- Test-case titles must now be unique, and saving a duplicate title is rejected. Titles, steps, expected results, and preconditions also have length limits.
+
+
 ## [v1.3.0] — 2026-06-18
 
 ### Added
