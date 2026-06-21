@@ -70,10 +70,29 @@ function SiteHeader() {
     if (!menuOpen) return
     const node = navRef.current
     const toggle = toggleRef.current
+    const links = () => Array.from(node.querySelectorAll('a[href]'))
+
+    ;(links()[0] || node).focus()
 
     const onKeyDown = (e) => {
       // Defer Escape to the modal layer when a shortcuts modal sits on top.
-      if (e.key === 'Escape' && !modalOpenRef.current) setMenuOpen(false)
+      if (e.key === 'Escape' && !modalOpenRef.current) {
+        setMenuOpen(false)
+        return
+      }
+      if (e.key === 'Tab') {
+        const els = links()
+        if (els.length === 0) return
+        const first = els[0]
+        const last = els[els.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     const onPointerDown = (e) => {
       if (node.contains(e.target) || (toggle && toggle.contains(e.target))) return
@@ -84,6 +103,7 @@ function SiteHeader() {
     return () => {
       document.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('pointerdown', onPointerDown)
+      if (toggle) toggle.focus()
     }
   }, [menuOpen])
 
@@ -101,7 +121,7 @@ function SiteHeader() {
         onClick={() => setMenuOpen((open) => !open)}
         aria-expanded={menuOpen}
         aria-controls="primary-nav"
-        aria-label="Toggle navigation"
+        aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
       >
         {menuOpen ? '✕' : '☰'}
       </button>
