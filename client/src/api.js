@@ -147,6 +147,8 @@ export const createReport = (runId) =>
 // The export endpoint streams a file (not the JSON envelope), so it is a plain URL.
 export const reportHtmlExportUrl = (id) => `/api/reports/${id}/export/html`
 
+export const search = (q) => request(`/api/search?q=${encodeURIComponent(q)}`)
+
 export const getSettings = () => request('/api/settings')
 
 export const updateSettings = (payload) =>

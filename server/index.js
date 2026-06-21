@@ -41,6 +41,7 @@ import {
   handleExportReportHtml,
 } from './routes/reports.js'
 import { handleGetSettings, handleUpdateSettings } from './routes/settings.js'
+import { handleSearch } from './routes/search.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -100,6 +101,8 @@ app.get('/api/reports/:id/export/html', handleExportReportHtml)
 
 app.get('/api/settings', handleGetSettings)
 app.put('/api/settings', handleUpdateSettings)
+
+app.get('/api/search', handleSearch)
 
 // Unmatched API routes still return the { success, data, error } shape.
 app.use('/api', (req, res) => {

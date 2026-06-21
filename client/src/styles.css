@@ -352,6 +352,70 @@ tbody tr.clickable { cursor: pointer; }
   .report-summary { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* header affordances that advertise the shortcuts */
+.header-tools { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.header-search {
+  display: flex; align-items: center; gap: 18px; cursor: pointer;
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--muted); font: inherit; font-size: 13px;
+}
+.header-search:hover { border-color: var(--accent); color: var(--text); }
+.header-search-keys { display: flex; gap: 3px; }
+.icon-btn {
+  width: 30px; height: 30px; flex-shrink: 0; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  color: var(--muted); font: inherit; font-weight: 700;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* keyboard shortcuts — quick search */
+.quick-search { max-width: 560px; padding: 0; overflow: hidden; }
+.quick-search-input {
+  width: 100%; border: none; border-bottom: 1px solid var(--border);
+  border-radius: 0; padding: 16px 18px; font-size: 16px;
+}
+.quick-search-input:focus { border-color: var(--border); }
+.quick-search-results { max-height: 50vh; overflow-y: auto; padding: 6px; }
+.quick-search-hint { padding: 24px 14px; text-align: center; color: var(--muted); }
+.quick-search-group { margin-bottom: 4px; }
+.quick-search-group-head {
+  padding: 8px 12px 4px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--muted); font-weight: 600;
+}
+.quick-search-row {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 9px 12px; border: none; background: none; border-radius: 7px;
+  cursor: pointer; font: inherit; color: var(--text);
+}
+.quick-search-row.is-active { background: var(--sev-trivial-bg); }
+.quick-search-title { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quick-search-foot {
+  display: flex; gap: 16px; padding: 10px 14px; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 12px;
+}
+
+/* keyboard shortcuts — help cheat sheet */
+.shortcuts-help { max-width: 460px; }
+.shortcut-group { margin-bottom: 16px; }
+.shortcut-group-head {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--muted); font-weight: 600; margin-bottom: 6px;
+}
+.shortcut-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.shortcut-row:last-child { border-bottom: none; }
+.shortcut-keys { display: flex; align-items: center; gap: 5px; }
+.shortcut-sep { color: var(--muted); font-size: 12px; }
+
+kbd {
+  display: inline-block; min-width: 20px; text-align: center;
+  padding: 2px 7px; font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px;
+}
+
 /* settings */
 .settings-form { max-width: 640px; }
 .settings-section { padding: 20px 22px; margin-bottom: 16px; }

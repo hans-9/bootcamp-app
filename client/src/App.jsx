@@ -11,10 +11,36 @@ import TestRunDetailPage from './pages/TestRunDetailPage.jsx'
 import ReportsPage from './pages/ReportsPage.jsx'
 import ReportDetailPage from './pages/ReportDetailPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
+import { ShortcutsProvider, useShortcuts } from './components/KeyboardShortcuts.jsx'
+import { MOD_LABEL } from './shortcuts.js'
+
+function HeaderTools() {
+  const { openSearch, openHelp } = useShortcuts()
+  return (
+    <div className="header-tools">
+      <button type="button" className="header-search" onClick={openSearch}>
+        <span>Search…</span>
+        <span className="header-search-keys">
+          <kbd>{MOD_LABEL}</kbd>
+          <kbd>K</kbd>
+        </span>
+      </button>
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={openHelp}
+        aria-label="Keyboard shortcuts"
+        title="Keyboard shortcuts (?)"
+      >
+        ?
+      </button>
+    </div>
+  )
+}
 
 export default function App() {
   return (
-    <>
+    <ShortcutsProvider>
       <header className="app-header">
         <h1>
           <Link to="/test-cases" style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -30,6 +56,7 @@ export default function App() {
           <NavLink to="/reports">Reports</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>
+        <HeaderTools />
       </header>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -46,6 +73,6 @@ export default function App() {
         <Route path="/reports/:id" element={<ReportDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
-    </>
+    </ShortcutsProvider>
   )
 }

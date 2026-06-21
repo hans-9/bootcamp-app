@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   listTestCases,
   createTestCase,
@@ -22,14 +22,18 @@ function formatDate(iso) {
 export default function TestCasesPage() {
   const { settings } = useSettings()
   const perPage = settings.default_page_size
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [data, setData] = useState(null) // { items, page, total, totalPages }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // The active query lives in the URL (?search=), so refresh, back/forward, and
+  // shared links all stay honest. The box mirrors it; typing is debounced back in.
+  const search = searchParams.get('search') ?? ''
   const [page, setPage] = useState(1)
-  const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('') // debounced
+  const [searchInput, setSearchInput] = useState(() => (search.trim() ? search : ''))
+  const lastPushed = useRef(search)
   const [status, setStatus] = useState('')
   const [sort, setSort] = useState('updated')
   const [dir, setDir] = useState('desc')
@@ -37,14 +41,34 @@ export default function TestCasesPage() {
   const [editing, setEditing] = useState(undefined) // undefined = closed, null = new, object = edit
   const [menuId, setMenuId] = useState(null)
 
-  // Debounce the search box so we don't fire a request per keystroke.
+  // Reflect external URL changes (deep link, back/forward) into the box, ignoring
+  // the echo of our own debounced writes so the cursor isn't disturbed mid-typing.
+  // A whitespace-only param seeds an empty box.
   useEffect(() => {
+    if (search === lastPushed.current) return
+    lastPushed.current = search
+    setSearchInput(search.trim() ? search : '')
+    setPage(1)
+  }, [search])
+
+  // Debounce the typed value into the URL (the source of truth).
+  useEffect(() => {
+    if (searchInput === search) return
     const t = setTimeout(() => {
-      setSearch(searchInput)
+      lastPushed.current = searchInput
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (searchInput) next.set('search', searchInput)
+          else next.delete('search')
+          return next
+        },
+        { replace: true },
+      )
       setPage(1)
     }, 300)
     return () => clearTimeout(t)
-  }, [searchInput])
+  }, [searchInput, search, setSearchParams])
 
   async function load() {
     setLoading(true)
