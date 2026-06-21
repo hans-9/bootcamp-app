@@ -1,6 +1,7 @@
 ---
 name: commit-this
 description: Stage and commit the working-tree changes following this repo's Git conventions — analyze the diff, split it into logical commits, propose messages, and verify each commit. Use whenever the user asks to "commit", "commit this", "commit my changes", "create commits", or "split this into commits".
+model: haiku
 ---
 
 Turn the current working-tree changes into one or more clean, well-scoped commits that follow this repo's conventions. Be deliberate: understand every change before staging it, never bundle unrelated work, and verify the result.
