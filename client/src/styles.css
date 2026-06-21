@@ -85,17 +85,55 @@ body {
 }
 
 .app-header {
+  position: relative;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 14px 28px;
 }
-.app-header { display: flex; align-items: baseline; gap: 28px; }
+.app-header { display: flex; align-items: center; gap: 28px; }
 .app-header h1 { margin: 0; font-size: 18px; }
 .app-header a { color: var(--muted); text-decoration: none; }
 .app-nav { display: flex; gap: 18px; }
 .app-nav a { color: var(--muted); font-weight: 600; font-size: 14px; padding-bottom: 2px; }
 .app-nav a:hover { color: var(--text); }
 .app-nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+.nav-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  font-size: 18px; line-height: 1;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 7px;
+  cursor: pointer;
+}
+.nav-toggle:hover { border-color: var(--accent); }
+
+@media (max-width: 768px) {
+  .app-header { gap: 12px; padding: 14px 18px; }
+  .nav-toggle { display: inline-flex; order: 3; }
+
+  .app-nav {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    z-index: 20;
+    flex-direction: column; gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .app-nav.open { display: flex; }
+  .app-nav a {
+    padding: 12px 28px;
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+  .app-nav a.active {
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+  }
+}
 
 .container { max-width: 1080px; margin: 0 auto; padding: 28px; }
 

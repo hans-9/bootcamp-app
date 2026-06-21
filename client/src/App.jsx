@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate, Link, NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate, Link, NavLink, useLocation } from 'react-router-dom'
 import DashboardPage from './pages/DashboardPage.jsx'
 import TestCasesPage from './pages/TestCasesPage.jsx'
 import TestCaseImportPage from './pages/TestCaseImportPage.jsx'
@@ -38,26 +39,58 @@ function HeaderTools() {
   )
 }
 
+function SiteHeader() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
+  return (
+    <header className="app-header">
+      <h1>
+        <Link to="/test-cases" style={{ color: 'inherit', textDecoration: 'none' }}>
+          Bootcamp App
+        </Link>
+      </h1>
+      <button
+        type="button"
+        className="nav-toggle"
+        onClick={() => setMenuOpen((open) => !open)}
+        aria-expanded={menuOpen}
+        aria-controls="primary-nav"
+        aria-label="Toggle navigation"
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
+      <nav id="primary-nav" className={menuOpen ? 'app-nav open' : 'app-nav'}>
+        <NavLink to="/dashboard">Dashboard</NavLink>
+        <NavLink to="/test-cases">Test Cases</NavLink>
+        <NavLink to="/test-suites">Test Suites</NavLink>
+        <NavLink to="/bugs">Bugs</NavLink>
+        <NavLink to="/test-runs">Test Runs</NavLink>
+        <NavLink to="/reports">Reports</NavLink>
+        <NavLink to="/settings">Settings</NavLink>
+      </nav>
+      <HeaderTools />
+    </header>
+  )
+}
+
 export default function App() {
   return (
     <ShortcutsProvider>
-      <header className="app-header">
-        <h1>
-          <Link to="/test-cases" style={{ color: 'inherit', textDecoration: 'none' }}>
-            Bootcamp App
-          </Link>
-        </h1>
-        <nav className="app-nav">
-          <NavLink to="/dashboard">Dashboard</NavLink>
-          <NavLink to="/test-cases">Test Cases</NavLink>
-          <NavLink to="/test-suites">Test Suites</NavLink>
-          <NavLink to="/bugs">Bugs</NavLink>
-          <NavLink to="/test-runs">Test Runs</NavLink>
-          <NavLink to="/reports">Reports</NavLink>
-          <NavLink to="/settings">Settings</NavLink>
-        </nav>
-        <HeaderTools />
-      </header>
+      <SiteHeader />
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
