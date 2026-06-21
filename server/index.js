@@ -1,4 +1,7 @@
 import express from 'express'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+import { existsSync } from 'node:fs'
 import {
   handleListTestCases,
   handleExportTestCases,
@@ -108,6 +111,16 @@ app.get('/api/search', handleSearch)
 app.use('/api', (req, res) => {
   res.status(404).json({ success: false, data: null, error: `Cannot ${req.method} ${req.path}` })
 })
+
+// In production the same service serves the built client. The dist folder only
+// exists after `npm run build`; in dev Vite serves the client instead, so this
+// block stays dormant and the dev proxy is untouched.
+const clientDist = join(dirname(fileURLToPath(import.meta.url)), '..', 'client', 'dist')
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist))
+  // SPA fallback: client-side routes (React Router) resolve to index.html.
+  app.get('*', (req, res) => res.sendFile(join(clientDist, 'index.html')))
+}
 
 // Any thrown error (incl. malformed JSON bodies) returns the same shape.
 app.use((err, req, res, next) => {

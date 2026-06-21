@@ -1,0 +1,18 @@
+# Render Blueprint (Infrastructure as Code).
+# One free web service that builds the React client and runs the Express server,
+# which serves both the API and the built client. Read by the one-click deploy.
+services:
+  - type: web
+    name: bootcamp-app
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    # --include=dev forces Vite (a devDependency) to install even if the host
+    # sets NODE_ENV=production, otherwise the client build would fail.
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22.9.0"
