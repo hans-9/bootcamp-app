@@ -1,4 +1,4 @@
-import db, { SEVERITIES, STATUSES, SEVERITY_RANK } from '../db.js'
+import db, { SEVERITIES, STATUSES, SEVERITY_RANK, PAGE_SIZES } from '../db.js'
 import { toCsv } from '../csv.js'
 
 // Columns written to an exported CSV, in order. `steps` is joined one-per-line
@@ -114,7 +114,8 @@ function buildListFilter(query) {
 
 export function handleListTestCases(req, res) {
   const requestedPage = Math.max(1, parseInt(req.query.page) || 1)
-  const perPage = 20
+  const requestedPerPage = parseInt(req.query.perPage)
+  const perPage = PAGE_SIZES.includes(requestedPerPage) ? requestedPerPage : 20
   const { whereSql, orderSql, params } = buildListFilter(req.query)
 
   const { total } = db.prepare(`SELECT COUNT(*) AS total FROM test_cases ${whereSql}`).get(params)

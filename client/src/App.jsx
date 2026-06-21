@@ -10,6 +10,7 @@ import TestRunsPage from './pages/TestRunsPage.jsx'
 import TestRunDetailPage from './pages/TestRunDetailPage.jsx'
 import ReportsPage from './pages/ReportsPage.jsx'
 import ReportDetailPage from './pages/ReportDetailPage.jsx'
+import SettingsPage from './pages/SettingsPage.jsx'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <NavLink to="/bugs">Bugs</NavLink>
           <NavLink to="/test-runs">Test Runs</NavLink>
           <NavLink to="/reports">Reports</NavLink>
+          <NavLink to="/settings">Settings</NavLink>
         </nav>
       </header>
       <Routes>
@@ -42,6 +44,7 @@ export default function App() {
         <Route path="/test-runs/:id" element={<TestRunDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/reports/:id" element={<ReportDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </>
   )

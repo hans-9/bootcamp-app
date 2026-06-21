@@ -30,6 +30,49 @@
   --st-pending:     #6b7785;
 }
 
+[data-theme='dark'] {
+  --bg: #0f141a;
+  --surface: #1a212b;
+  --border: #2b3543;
+  --text: #e4e9ef;
+  --muted: #95a1b0;
+  --accent: #4d8bf0;
+  --accent-hover: #6ba0f5;
+  --danger: #f06a6a;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 6px 24px rgba(0, 0, 0, 0.3);
+
+  /* severity */
+  --sev-critical-bg: #3a1f1f; --sev-critical-fg: #f4a6a0;
+  --sev-major-bg:    #3a2c19; --sev-major-fg:    #e3b06a;
+  --sev-minor-bg:    #34301a; --sev-minor-fg:    #d8c46a;
+  --sev-trivial-bg:  #262d36; --sev-trivial-fg:  #9aa6b3;
+
+  /* status */
+  --st-draft:       #95a1b0;
+  --st-ready:       #4d8bf0;
+  --st-in-progress: #e3b06a;
+  --st-passed:      #4cc585;
+  --st-failed:      #f06a6a;
+  --st-skipped:     #d8c46a;
+  --st-open:        #f06a6a;
+  --st-resolved:    #4cc585;
+  --st-closed:      #95a1b0;
+  --st-reopened:    #b07ef0;
+  --st-running:     #4d8bf0;
+  --st-pending:     #95a1b0;
+}
+
+/* Dark overrides for the handful of hardcoded light backgrounds. */
+[data-theme='dark'] .btn:hover,
+[data-theme='dark'] .menu button:hover { background: #232c38; }
+[data-theme='dark'] tbody tr:hover,
+[data-theme='dark'] .activity-item.clickable:hover { background: #20272f; }
+[data-theme='dark'] .case-row.dragging { background: #1f2a3d; }
+[data-theme='dark'] .skeleton {
+  background: linear-gradient(90deg, #20272f 25%, #2b3543 37%, #20272f 63%);
+  background-size: 400% 100%;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -308,6 +351,17 @@ tbody tr.clickable { cursor: pointer; }
   .dash-columns { grid-template-columns: 1fr; }
   .report-summary { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* settings */
+.settings-form { max-width: 640px; }
+.settings-section { padding: 20px 22px; margin-bottom: 16px; }
+.settings-section h3 { margin: 0 0 4px; font-size: 15px; }
+.settings-section .section-hint { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+.settings-section .field:last-child { margin-bottom: 0; }
+.checkbox-field { display: flex; align-items: flex-start; gap: 10px; }
+.checkbox-field input { width: auto; padding: 0; }
+.settings-actions { display: flex; align-items: center; gap: 14px; }
+.saved-note { color: var(--st-passed); font-size: 13px; font-weight: 600; }
 
 /* reports */
 .report-summary {

@@ -10,6 +10,7 @@ import {
 import SeverityBadge from '../components/SeverityBadge.jsx'
 import StatusPill from '../components/StatusPill.jsx'
 import TestCaseForm from '../components/TestCaseForm.jsx'
+import { useSettings } from '../SettingsContext.jsx'
 
 const STATUSES = ['draft', 'ready', 'passed', 'failed', 'skipped']
 
@@ -19,6 +20,9 @@ function formatDate(iso) {
 }
 
 export default function TestCasesPage() {
+  const { settings } = useSettings()
+  const perPage = settings.default_page_size
+
   const [data, setData] = useState(null) // { items, page, total, totalPages }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -46,8 +50,11 @@ export default function TestCasesPage() {
     setLoading(true)
     setError(null)
     try {
-      const result = await listTestCases({ page, search, status, sort, dir })
+      const result = await listTestCases({ page, perPage, search, status, sort, dir })
       setData(result)
+      // The server clamps an out-of-range page (e.g. after the page size grows);
+      // sync local state to what it actually returned so Prev/Next stay correct.
+      if (result.page !== page) setPage(result.page)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -58,7 +65,7 @@ export default function TestCasesPage() {
   useEffect(() => {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search, status, sort, dir])
+  }, [page, perPage, search, status, sort, dir])
 
   // Close the row menu on any outside click.
   useEffect(() => {

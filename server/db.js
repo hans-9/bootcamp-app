@@ -15,6 +15,8 @@ export const BUG_STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reope
 export const BUG_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
 export const RUN_STATUSES = ['running', 'passed', 'failed']
 export const RESULT_STATUSES = ['passed', 'failed', 'skipped']
+export const THEMES = ['light', 'dark', 'system']
+export const PAGE_SIZES = [10, 20, 50, 100]
 
 // Rank used for "sort by severity" — higher number = more severe, so
 // ORDER BY rank DESC puts Critical first (matches "updated DESC = newest first").
@@ -139,6 +141,19 @@ db.exec(`
   )
 `)
 
+// Single-row table of user preferences. One user for now, so the row is id = 1.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS user_preferences (
+    id                             INTEGER PRIMARY KEY AUTOINCREMENT,
+    theme                          TEXT NOT NULL DEFAULT 'system',   -- light | dark | system
+    default_severity_for_new_bugs  TEXT NOT NULL DEFAULT 'Minor',    -- Critical | Major | Minor | Trivial
+    default_page_size              INTEGER NOT NULL DEFAULT 20,      -- 10 | 20 | 50 | 100
+    timezone                       TEXT NOT NULL DEFAULT '',         -- IANA name; '' means follow the browser
+    auto_generate_report_after_run INTEGER NOT NULL DEFAULT 1,       -- 0 | 1 (boolean)
+    updated_at                     TEXT NOT NULL
+  )
+`)
+
 // Seed once, only when the table is empty.
 const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get()
 if (count === 0) seed()
@@ -154,6 +169,11 @@ if (runCount === 0) seedRuns()
 
 const { reportCount } = db.prepare('SELECT COUNT(*) AS reportCount FROM reports').get()
 if (reportCount === 0) seedReports()
+
+const { prefCount } = db.prepare('SELECT COUNT(*) AS prefCount FROM user_preferences').get()
+if (prefCount === 0) {
+  db.prepare('INSERT INTO user_preferences (updated_at) VALUES (?)').run(new Date().toISOString())
+}
 
 function seed() {
   const now = new Date().toISOString()

@@ -19,9 +19,10 @@ async function request(path, options) {
   return body.data
 }
 
-export function listTestCases({ page, search, title, status, sort, dir } = {}) {
+export function listTestCases({ page, perPage, search, title, status, sort, dir } = {}) {
   const qs = new URLSearchParams()
   if (page) qs.set('page', page)
+  if (perPage) qs.set('perPage', perPage)
   if (search) qs.set('search', search)
   if (title) qs.set('title', title)
   if (status) qs.set('status', status)
@@ -145,3 +146,8 @@ export const createReport = (runId) =>
 
 // The export endpoint streams a file (not the JSON envelope), so it is a plain URL.
 export const reportHtmlExportUrl = (id) => `/api/reports/${id}/export/html`
+
+export const getSettings = () => request('/api/settings')
+
+export const updateSettings = (payload) =>
+  request('/api/settings', { method: 'PUT', body: JSON.stringify(payload) })

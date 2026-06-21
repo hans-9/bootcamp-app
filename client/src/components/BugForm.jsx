@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSettings } from '../SettingsContext.jsx'
 
 const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
 const PRIORITIES = ['Low', 'Medium', 'High', 'Urgent']
@@ -16,10 +17,11 @@ const blank = {
 
 // `initial` is a bug to edit, or null/undefined to create a new one.
 export default function BugForm({ initial, onSave, onClose }) {
+  const { settings } = useSettings()
   const [form, setForm] = useState(() =>
     initial
       ? { ...initial, steps_to_reproduce: initial.steps_to_reproduce.length ? initial.steps_to_reproduce : [''] }
-      : blank,
+      : { ...blank, severity: settings.default_severity_for_new_bugs },
   )
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
