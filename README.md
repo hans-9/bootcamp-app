@@ -2,6 +2,8 @@
 
 A QA test-management tool: manage test cases, suites, test runs, bug reports, dashboards, and reports. React + Vite client, Express API, SQLite storage, in an npm-workspaces monorepo.
 
+**Live:** https://bootcamp-app-wywi.onrender.com
+
 ## Stack
 
 - **client/** — React + Vite SPA (dev port 3000)
@@ -45,7 +47,7 @@ https://render.com/deploy?repo=https://github.com/hans-9/bootcamp-app
 
 Or click: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/hans-9/bootcamp-app)
 
-After it deploys, the public URL is `https://<service-name>.onrender.com`.
+After it deploys, the public URL is `https://<service-name>.onrender.com` — this app is live at https://bootcamp-app-wywi.onrender.com.
 
 ### Notes on the free tier
 
