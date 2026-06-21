@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.6.0] — 2026-06-21
+
+### Changed
+- The top navigation now adapts to small screens: section links tuck behind a menu button you can open and close, and it stays fully keyboard-accessible. On larger screens the navigation looks and works just as before.
+
 ## [v1.5.0] — 2026-06-21
 
 ### Added
