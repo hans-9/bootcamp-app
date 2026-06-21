@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.5.0] — 2026-06-21
+
+### Added
+- Quick search you can open from anywhere to jump straight to a test case, bug, or suite, plus keyboard shortcuts for moving between sections and a built-in cheat sheet of every shortcut.
+
 ## [v1.4.0] — 2026-06-21
 
 ### Added
