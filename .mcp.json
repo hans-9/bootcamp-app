@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
     "discord": {
       "command": "node",
       "args": ["/Users/hanscaceres/Documents/tdl_courses/2026/discordmcp/build/index.js"],
