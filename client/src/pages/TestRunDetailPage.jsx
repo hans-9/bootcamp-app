@@ -198,6 +198,7 @@ export default function TestRunDetailPage() {
 
                       <textarea
                         placeholder="Notes (optional)"
+                        aria-label={`Notes for ${r.case_title}`}
                         value={notes[r.id] ?? ''}
                         onChange={(e) =>
                           setNotes((prev) => ({ ...prev, [r.id]: e.target.value }))

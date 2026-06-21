@@ -5,6 +5,7 @@ import SeverityBadge from '../components/SeverityBadge.jsx'
 import PriorityBadge from '../components/PriorityBadge.jsx'
 import StatusPill from '../components/StatusPill.jsx'
 import BugForm from '../components/BugForm.jsx'
+import { navProps } from '../nav.js'
 
 const STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened']
 const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
@@ -74,6 +75,21 @@ export default function BugsPage() {
     return <span className="arrow">{dir === 'desc' ? '▼' : '▲'}</span>
   }
 
+  function sortProps(column) {
+    return {
+      role: 'button',
+      tabIndex: 0,
+      'aria-sort': sort === column ? (dir === 'asc' ? 'ascending' : 'descending') : 'none',
+      onClick: () => toggleSort(column),
+      onKeyDown: (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          toggleSort(column)
+        }
+      },
+    }
+  }
+
   async function handleCreate(payload) {
     const bug = await createBug(payload)
     setCreating(false)
@@ -104,18 +120,19 @@ export default function BugsPage() {
         <input
           className="grow"
           placeholder="Search title or description…"
+          aria-label="Search bugs by title or description"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
+        <select aria-label="Filter by severity" value={severity} onChange={(e) => setSeverity(e.target.value)}>
           <option value="">All severities</option>
           {SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+        <select aria-label="Filter by priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
           <option value="">All priorities</option>
           {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
@@ -125,17 +142,22 @@ export default function BugsPage() {
         <table>
           <thead>
             <tr>
-              <th className="sortable" onClick={() => toggleSort('title')}>Title {sortArrow('title')}</th>
-              <th className="sortable" onClick={() => toggleSort('severity')}>Severity {sortArrow('severity')}</th>
-              <th className="sortable" onClick={() => toggleSort('priority')}>Priority {sortArrow('priority')}</th>
-              <th className="sortable" onClick={() => toggleSort('status')}>Status {sortArrow('status')}</th>
-              <th className="sortable" onClick={() => toggleSort('updated')}>Updated {sortArrow('updated')}</th>
+              <th className="sortable" {...sortProps('title')}>Title {sortArrow('title')}</th>
+              <th className="sortable" {...sortProps('severity')}>Severity {sortArrow('severity')}</th>
+              <th className="sortable" {...sortProps('priority')}>Priority {sortArrow('priority')}</th>
+              <th className="sortable" {...sortProps('status')}>Status {sortArrow('status')}</th>
+              <th className="sortable" {...sortProps('updated')}>Updated {sortArrow('updated')}</th>
               <th style={{ width: 50 }} />
             </tr>
           </thead>
           <tbody>
             {items.map((b) => (
-              <tr key={b.id} className="clickable" onClick={() => navigate(`/bugs/${b.id}`)}>
+              <tr
+                key={b.id}
+                className="clickable"
+                aria-label={`Open bug ${b.title}`}
+                {...navProps(navigate, `/bugs/${b.id}`)}
+              >
                 <td className="title-cell">{b.title}</td>
                 <td><SeverityBadge severity={b.severity} /></td>
                 <td><PriorityBadge priority={b.priority} /></td>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { listSuites, createSuite, deleteSuite } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
 import SuiteForm from '../components/SuiteForm.jsx'
+import { navProps } from '../nav.js'
 
 const SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', 'failed']
 
@@ -72,7 +73,7 @@ export default function TestSuitesPage() {
       </div>
 
       <div className="toolbar">
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>
           {SUITE_STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
@@ -94,7 +95,12 @@ export default function TestSuitesPage() {
           </thead>
           <tbody>
             {items.map((s) => (
-              <tr key={s.id} className="clickable" onClick={() => navigate(`/test-suites/${s.id}`)}>
+              <tr
+                key={s.id}
+                className="clickable"
+                aria-label={`Open suite ${s.name}`}
+                {...navProps(navigate, `/test-suites/${s.id}`)}
+              >
                 <td className="title-cell">{s.name}</td>
                 <td className="muted">{s.feature}</td>
                 <td><StatusPill status={s.status} /></td>

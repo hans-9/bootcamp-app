@@ -52,6 +52,7 @@ export default function AddCaseModal({ existingIds, onAdd, onClose }) {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by title…"
+            aria-label="Search test cases by title"
             style={{ width: '100%' }}
             autoFocus
           />

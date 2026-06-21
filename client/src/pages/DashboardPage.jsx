@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getDashboardMetrics, getDashboardTrends } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
+import { navProps } from '../nav.js'
 
 // Charts pull in Recharts (+ D3); load that chunk only when the dashboard renders.
 const DashboardCharts = lazy(() => import('../components/DashboardCharts.jsx'))
@@ -43,20 +44,6 @@ function describeActivity(a) {
   if (a.action === 'status_change') return `bug #${a.bug_id} marked ${a.new_value}`
   if (a.action === 'comment') return `bug #${a.bug_id} got a new comment`
   return `bug #${a.bug_id} ${a.action}`
-}
-
-function navProps(navigate, to) {
-  return {
-    role: 'link',
-    tabIndex: 0,
-    onClick: () => navigate(to),
-    onKeyDown: (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        navigate(to)
-      }
-    },
-  }
 }
 
 export default function DashboardPage() {

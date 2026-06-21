@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listRuns } from '../api.js'
 import StatusPill from '../components/StatusPill.jsx'
+import { navProps } from '../nav.js'
 
 function formatDate(iso) {
   if (!iso) return '—'
@@ -54,7 +55,8 @@ export default function TestRunsPage() {
                 <tr
                   key={r.id}
                   className="clickable"
-                  onClick={() => navigate(`/test-runs/${r.id}`)}
+                  aria-label={`Open test run for ${r.suite_name}`}
+                  {...navProps(navigate, `/test-runs/${r.id}`)}
                 >
                   <td className="title-cell">{r.suite_name}</td>
                   <td><StatusPill status={r.status} /></td>

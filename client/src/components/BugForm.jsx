@@ -104,6 +104,7 @@ export default function BugForm({ initial, onSave, onClose }) {
                   value={step}
                   onChange={(e) => setStep(i, e.target.value)}
                   placeholder="Describe one action"
+                  aria-label={`Step ${i + 1}`}
                 />
                 {form.steps_to_reproduce.length > 1 && (
                   <button type="button" className="remove" onClick={() => removeStep(i)} aria-label="Remove step">

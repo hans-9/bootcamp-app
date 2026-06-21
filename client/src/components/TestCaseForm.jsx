@@ -102,6 +102,7 @@ export default function TestCaseForm({ initial, onSave, onClose, findDuplicateTi
                   value={step}
                   onChange={(e) => setStep(i, e.target.value)}
                   placeholder="Describe one action"
+                  aria-label={`Step ${i + 1}`}
                 />
                 {form.steps.length > 1 && (
                   <button

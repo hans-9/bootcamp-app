@@ -149,7 +149,7 @@ export default function BugDetailPage() {
               <p className="muted">No transitions available from “{bug.status}”.</p>
             ) : (
               <>
-                <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} style={{ width: '100%' }}>
+                <select aria-label="Change status" value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} style={{ width: '100%' }}>
                   <option value="">Select new status…</option>
                   {nextOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -158,6 +158,7 @@ export default function BugDetailPage() {
                   onChange={(e) => setStatusMessage(e.target.value)}
                   rows={2}
                   placeholder="Optional note for the timeline"
+                  aria-label="Status change note"
                   style={{ marginTop: 8 }}
                 />
                 <button className="btn btn-primary" onClick={applyStatus} disabled={busy || !nextStatus} style={{ marginTop: 8 }}>
@@ -177,6 +178,7 @@ export default function BugDetailPage() {
             onChange={(e) => setComment(e.target.value)}
             rows={2}
             placeholder="Add a comment…"
+            aria-label="Add a comment"
           />
           <button className="btn" onClick={postComment} disabled={busy || !comment.trim()}>Comment</button>
         </div>

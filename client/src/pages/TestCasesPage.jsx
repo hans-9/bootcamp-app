@@ -114,6 +114,21 @@ export default function TestCasesPage() {
     return <span className="arrow">{dir === 'desc' ? '▼' : '▲'}</span>
   }
 
+  function sortProps(column) {
+    return {
+      role: 'button',
+      tabIndex: 0,
+      'aria-sort': sort === column ? (dir === 'asc' ? 'ascending' : 'descending') : 'none',
+      onClick: () => toggleSort(column),
+      onKeyDown: (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          toggleSort(column)
+        }
+      },
+    }
+  }
+
   async function handleSave(payload) {
     if (editing) {
       await updateTestCase(editing.id, payload)
@@ -181,10 +196,12 @@ export default function TestCasesPage() {
         <input
           className="grow"
           placeholder="Search by title…"
+          aria-label="Search test cases by title"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
         />
         <select
+          aria-label="Filter by status"
           value={status}
           onChange={(e) => {
             setStatus(e.target.value)
@@ -205,11 +222,11 @@ export default function TestCasesPage() {
           <thead>
             <tr>
               <th>Title</th>
-              <th className="sortable" onClick={() => toggleSort('severity')}>
+              <th className="sortable" {...sortProps('severity')}>
                 Severity {sortArrow('severity')}
               </th>
               <th>Status</th>
-              <th className="sortable" onClick={() => toggleSort('updated')}>
+              <th className="sortable" {...sortProps('updated')}>
                 Updated {sortArrow('updated')}
               </th>
               <th style={{ width: 50 }} />
