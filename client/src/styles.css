@@ -86,11 +86,11 @@ body {
 
 .app-header {
   position: relative;
+  display: flex; align-items: center; gap: 28px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 14px 28px;
 }
-.app-header { display: flex; align-items: center; gap: 28px; }
 .app-header h1 { margin: 0; font-size: 18px; }
 .app-header a { color: var(--muted); text-decoration: none; }
 .app-nav { display: flex; gap: 18px; }
@@ -117,8 +117,11 @@ body {
     display: none;
     position: absolute;
     top: 100%; left: 0; right: 0;
-    z-index: 20;
+    z-index: 50;
     flex-direction: column; gap: 0;
+    max-height: calc(100vh - 100%);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow);
