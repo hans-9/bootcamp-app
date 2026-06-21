@@ -5,6 +5,8 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
+  actions: read
 jobs:
   qa-review:
     runs-on: ubuntu-latest
