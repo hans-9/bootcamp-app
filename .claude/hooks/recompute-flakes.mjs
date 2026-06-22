@@ -21,29 +21,31 @@ try {
 }
 if (!command.includes('record-result.js')) process.exit(0)
 
-const { detectAndRecordNewFlakes, buildLeaderboard } = await import(
-  pathToFileURL(join(projectDir, 'server', 'flakes.js')).href
-)
-
 const now = new Date().toISOString()
-const newFlakes = detectAndRecordNewFlakes(now)
-const leaderboard = buildLeaderboard(10)
-
 const statePath = join(projectDir, '.claude', 'state', 'new-flakes.json')
-mkdirSync(dirname(statePath), { recursive: true })
-writeFileSync(
-  statePath,
-  JSON.stringify(
-    {
-      generated_at: now,
-      channel: process.env.DISCORD_FLAKE_CHANNEL || 'general',
-      new_flakes: newFlakes,
-      leaderboard,
-    },
-    null,
-    2,
-  ),
-)
+const channel = process.env.DISCORD_FLAKE_CHANNEL || 'general'
+
+let newFlakes = []
+try {
+  const { detectNewFlakes, buildLeaderboard } = await import(
+    pathToFileURL(join(projectDir, 'server', 'flakes.js')).href
+  )
+  newFlakes = detectNewFlakes()
+  const leaderboard = buildLeaderboard(10)
+  mkdirSync(dirname(statePath), { recursive: true })
+  writeFileSync(statePath, JSON.stringify({ generated_at: now, channel, new_flakes: newFlakes, leaderboard }, null, 2))
+} catch (err) {
+  // On failure write an empty list so the agent hook reads fresh state and does
+  // nothing, rather than acting on a stale file left from a previous run.
+  try {
+    mkdirSync(dirname(statePath), { recursive: true })
+    writeFileSync(statePath, JSON.stringify({ generated_at: now, channel, new_flakes: [], leaderboard: [], error: String(err?.message ?? err) }, null, 2))
+  } catch {
+    // Best effort — nothing more we can do from the hook.
+  }
+  console.log(JSON.stringify({ systemMessage: `Flake tracker: recompute failed — ${err?.message ?? err}. No alert posted.` }))
+  process.exit(0)
+}
 
 if (newFlakes.length > 0) {
   const names = newFlakes.map((f) => `#${f.test_case_id} ${f.title}`).join(', ')

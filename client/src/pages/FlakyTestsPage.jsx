@@ -77,7 +77,7 @@ export default function FlakyTestsPage() {
             </thead>
             <tbody>
               {items.map((t) => {
-                const pct = Math.round(t.fail_ratio * 100)
+                const pct = Math.max(0, Math.min(100, Math.round((Number(t.fail_ratio) || 0) * 100)))
                 const vol = volatility(t.flip_count, t.runs)
                 return (
                   <tr key={t.test_case_id}>

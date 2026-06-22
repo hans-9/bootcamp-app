@@ -15,6 +15,12 @@ if (!Number.isInteger(caseId) || caseId <= 0 || !fingerprint || !hypothesis) {
   process.exit(1)
 }
 
+const exists = db.prepare('SELECT 1 FROM test_cases WHERE id = ?').get(caseId)
+if (!exists) {
+  console.error(`No test case with id ${caseId} — refusing to write an orphan hypothesis.`)
+  process.exit(1)
+}
+
 db.prepare(
   `INSERT INTO flaky_hypotheses (test_case_id, hypothesis, fingerprint, generated_at)
    VALUES (?, ?, ?, ?)

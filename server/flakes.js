@@ -41,6 +41,7 @@ function statsFor(entry) {
   const { outcomes } = entry
   const passCount = outcomes.filter((o) => o === 'passed').length
   const failCount = outcomes.filter((o) => o === 'failed').length
+  const total = passCount + failCount
   let flips = 0
   for (let i = 1; i < outcomes.length; i++) {
     if (outcomes[i] !== outcomes[i - 1]) flips++
@@ -51,7 +52,9 @@ function statsFor(entry) {
     runs: outcomes.length,
     pass_count: passCount,
     fail_count: failCount,
-    fail_ratio: failCount / (passCount + failCount),
+    // total is only 0 for an entry with no passed/failed rows, which can't reach
+    // here today — guard anyway so the metric stays self-protecting.
+    fail_ratio: total ? failCount / total : 0,
     flip_count: flips,
     recent_results: outcomes.slice(-RECENT_LIMIT),
     fingerprint: `pass${passCount}-fail${failCount}`,
@@ -99,23 +102,34 @@ export function buildLeaderboard(limit = 10) {
     })
 }
 
-// Flakes that qualify now but have never been alerted. Records each as alerted
-// (in the same call) so it never fires twice. Returns the newly-alerted rows so
-// the caller can post them to Discord.
-export function detectAndRecordNewFlakes(nowIso) {
+// Flakes that qualify now but have not been alerted yet. Detection does NOT
+// record them — recording is deferred to recordAlerts() after a Discord post
+// actually succeeds, so a failed post leaves the flake un-alerted and it retries
+// on the next result rather than being silently swallowed.
+//
+// Also re-arms: a test that has settled and dropped out of the flaky set has its
+// alert row cleared, so if it starts flaking again later it alerts afresh.
+export function detectNewFlakes() {
   const flaky = rankedFlakes()
-  const alerted = new Set(
-    db.prepare('SELECT test_case_id FROM flake_alerts').all().map((r) => r.test_case_id),
-  )
-  const fresh = flaky.filter((s) => !alerted.has(s.test_case_id))
+  const flakyIds = new Set(flaky.map((s) => s.test_case_id))
 
+  const alertedRows = db.prepare('SELECT test_case_id FROM flake_alerts').all()
+  const alerted = new Set(alertedRows.map((r) => r.test_case_id))
+
+  const settled = alertedRows.map((r) => r.test_case_id).filter((id) => !flakyIds.has(id))
+  if (settled.length) {
+    const clear = db.prepare('DELETE FROM flake_alerts WHERE test_case_id = ?')
+    db.transaction((ids) => ids.forEach((id) => clear.run(id)))(settled)
+  }
+
+  return flaky.filter((s) => !alerted.has(s.test_case_id))
+}
+
+// Marks test cases as alerted. Called only after a confirmed Discord post, so an
+// alert is recorded at-most-once per flake episode and never lost on a failed post.
+export function recordAlerts(testCaseIds, nowIso) {
   const record = db.prepare(
     'INSERT OR IGNORE INTO flake_alerts (test_case_id, first_alerted_at) VALUES (?, ?)',
   )
-  const recordAll = db.transaction((rows) => {
-    for (const r of rows) record.run(r.test_case_id, nowIso)
-  })
-  recordAll(fresh)
-
-  return fresh
+  db.transaction((ids) => ids.forEach((id) => record.run(id, nowIso)))(testCaseIds)
 }
