@@ -291,7 +291,7 @@ function DashboardSkeleton() {
             <div className="dash-panel-head">
               <div className="skeleton skeleton-label" />
             </div>
-            <div style={{ padding: '14px' }}>
+            <div style={{ padding: 'var(--sp-4)' }}>
               {Array.from({ length: 5 }).map((_, j) => (
                 <div key={j} className="skeleton skeleton-row" />
               ))}

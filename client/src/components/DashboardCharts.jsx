@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
@@ -14,15 +15,30 @@ import {
   Legend,
 } from 'recharts'
 
-const AXIS = '#6b7785'
-const GRID = '#e3e6ea'
-
-const STATUS_COLORS = {
-  draft: '#6b7785',
-  ready: '#2f6feb',
-  passed: '#1f9d57',
-  failed: '#d23f3f',
-  skipped: '#8a6d00',
+// Recharts renders colors as SVG attributes, which can't resolve var(), so we
+// read the palette tokens off :root and re-read whenever the theme flips.
+function useChartColors() {
+  const read = () => {
+    const s = getComputedStyle(document.documentElement)
+    const get = (name) => s.getPropertyValue(name).trim()
+    return {
+      axis: get('--muted'),
+      grid: get('--border'),
+      accent: get('--accent'),
+      draft: get('--st-draft'),
+      ready: get('--st-ready'),
+      passed: get('--st-passed'),
+      failed: get('--st-failed'),
+      skipped: get('--st-skipped'),
+    }
+  }
+  const [colors, setColors] = useState(read)
+  useEffect(() => {
+    const obs = new MutationObserver(() => setColors(read()))
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => obs.disconnect()
+  }, [])
+  return colors
 }
 
 // Buckets and run dates are anchored to UTC on the server, so format in UTC too —
@@ -45,6 +61,14 @@ const tooltipStyle = {
 export default function DashboardCharts({ trends }) {
   const { passRateTrend, bugsPerWeek, coverageByStatus } = trends
   const totalCases = coverageByStatus.reduce((sum, s) => sum + s.count, 0)
+  const c = useChartColors()
+  const STATUS_COLORS = {
+    draft: c.draft,
+    ready: c.ready,
+    passed: c.passed,
+    failed: c.failed,
+    skipped: c.skipped,
+  }
 
   return (
     <div className="charts-grid">
@@ -56,18 +80,18 @@ export default function DashboardCharts({ trends }) {
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={passRateTrend} margin={{ top: 12, right: 16, bottom: 4, left: -8 }}>
-              <CartesianGrid stroke={GRID} vertical={false} />
+              <CartesianGrid stroke={c.grid} vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={shortDate}
-                stroke={AXIS}
+                stroke={c.axis}
                 fontSize={12}
                 tickLine={false}
               />
               <YAxis
                 domain={[0, 100]}
                 unit="%"
-                stroke={AXIS}
+                stroke={c.axis}
                 fontSize={12}
                 tickLine={false}
                 width={48}
@@ -80,7 +104,7 @@ export default function DashboardCharts({ trends }) {
               <Line
                 type="monotone"
                 dataKey="passRate"
-                stroke="#2f6feb"
+                stroke={c.accent}
                 strokeWidth={2}
                 dot={{ r: 3 }}
                 activeDot={{ r: 5 }}
@@ -97,22 +121,22 @@ export default function DashboardCharts({ trends }) {
         <div className="chart-body">
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={bugsPerWeek} margin={{ top: 12, right: 16, bottom: 4, left: -16 }}>
-            <CartesianGrid stroke={GRID} vertical={false} />
+            <CartesianGrid stroke={c.grid} vertical={false} />
             <XAxis
               dataKey="weekStart"
               tickFormatter={shortDate}
-              stroke={AXIS}
+              stroke={c.axis}
               fontSize={12}
               tickLine={false}
             />
-            <YAxis stroke={AXIS} fontSize={12} tickLine={false} allowDecimals={false} />
+            <YAxis stroke={c.axis} fontSize={12} tickLine={false} allowDecimals={false} />
             <Tooltip
               contentStyle={tooltipStyle}
               labelFormatter={(d) => `Week of ${shortDate(d)}`}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="opened" name="Opened" fill="#d23f3f" radius={[3, 3, 0, 0]} isAnimationActive={false} />
-            <Bar dataKey="closed" name="Closed" fill="#1f9d57" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="opened" name="Opened" fill={c.failed} radius={[3, 3, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="closed" name="Closed" fill={c.passed} radius={[3, 3, 0, 0]} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
         </div>
