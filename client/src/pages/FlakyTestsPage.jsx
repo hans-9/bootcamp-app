@@ -64,6 +64,7 @@ export default function FlakyTestsPage() {
           </div>
         )}
         {!loading && !error && items.length > 0 && (
+          <div className="table-wrap">
           <table className="flaky-table">
             <thead>
               <tr>
@@ -116,6 +117,7 @@ export default function FlakyTestsPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

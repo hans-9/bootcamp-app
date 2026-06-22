@@ -184,7 +184,7 @@ export default function BugDetailPage() {
         </div>
 
         {bug.activity.length === 0 ? (
-          <div className="empty">No activity yet.</div>
+          <div className="empty">No activity yet. Comment or change the status to start the trail.</div>
         ) : (
           <ul className="timeline">
             {bug.activity.map((a) => (
