@@ -5,6 +5,10 @@
 //
 //   node server/scripts/record-alerts.js <caseId> [caseId ...]
 
+import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
 import { recordAlerts } from '../flakes.js'
 
 const ids = process.argv
@@ -18,4 +22,18 @@ if (ids.length === 0) {
 }
 
 recordAlerts(ids, new Date().toISOString())
+
+// Clear the consumed flakes from the hand-off file so a later hook run (or any
+// stray Bash command) reads an empty list and does nothing, rather than acting
+// on a now-posted flake.
+const projectDir = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const statePath = join(projectDir, '.claude', 'state', 'new-flakes.json')
+try {
+  const state = JSON.parse(readFileSync(statePath, 'utf8'))
+  state.new_flakes = []
+  writeFileSync(statePath, JSON.stringify(state, null, 2))
+} catch {
+  // No state file or unreadable — nothing to clear.
+}
+
 console.log(`Recorded alerts for case(s): ${ids.join(', ')}`)
