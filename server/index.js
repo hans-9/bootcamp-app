@@ -45,6 +45,7 @@ import {
 } from './routes/reports.js'
 import { handleGetSettings, handleUpdateSettings } from './routes/settings.js'
 import { handleSearch } from './routes/search.js'
+import { handleListFlakyTests } from './routes/flaky-tests.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -96,6 +97,8 @@ app.get('/api/test-runs', handleListRuns)
 app.post('/api/test-runs', handleCreateRun)
 app.get('/api/test-runs/:id', handleGetRun)
 app.patch('/api/test-runs/:id/results/:resultId', handleUpdateResult)
+
+app.get('/api/flaky-tests', handleListFlakyTests)
 
 app.get('/api/reports', handleListReports)
 app.post('/api/reports', handleCreateReport)

@@ -3,6 +3,7 @@ node_modules/
 dist/
 .env
 .claude/settings.local.json
+.claude/state/
 .DS_Store
 *.db
 *.db-shm

@@ -149,6 +149,8 @@ export const reportHtmlExportUrl = (id) => `/api/reports/${id}/export/html`
 
 export const search = (q) => request(`/api/search?q=${encodeURIComponent(q)}`)
 
+export const listFlakyTests = () => request('/api/flaky-tests')
+
 export const getSettings = () => request('/api/settings')
 
 export const updateSettings = (payload) =>

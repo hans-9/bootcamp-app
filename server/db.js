@@ -6,6 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const db = new Database(join(__dirname, 'data.db'))
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON') // enforce suite_cases foreign keys + ON DELETE CASCADE
+db.pragma('busy_timeout = 5000') // the flake hook writes while the dev server holds the DB open
 
 // Allowed values, per CLAUDE.md.
 export const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial']
@@ -141,6 +142,28 @@ db.exec(`
   )
 `)
 
+// Caches the flake-analyzer subagent's root-cause hypothesis per test case.
+// fingerprint records the pass/fail tally the hypothesis was written for, so the
+// agent can skip regenerating an explanation when the history hasn't changed.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS flaky_hypotheses (
+    test_case_id INTEGER PRIMARY KEY,
+    hypothesis   TEXT NOT NULL,
+    fingerprint  TEXT NOT NULL DEFAULT '',
+    generated_at TEXT NOT NULL
+  )
+`)
+
+// One row per test case that has ever been alerted as a new flake. Its presence
+// is the dedupe key: a flake only triggers a Discord alert on the first run that
+// makes it qualify, never again.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS flake_alerts (
+    test_case_id     INTEGER PRIMARY KEY,
+    first_alerted_at TEXT NOT NULL
+  )
+`)
+
 // Single-row table of user preferences. One user for now, so the row is id = 1.
 db.exec(`
   CREATE TABLE IF NOT EXISTS user_preferences (
@@ -169,6 +192,15 @@ if (runCount === 0) seedRuns()
 
 const { reportCount } = db.prepare('SELECT COUNT(*) AS reportCount FROM reports').get()
 if (reportCount === 0) seedReports()
+
+// Top up the run history with enough mixed pass/fail data to make flakiness
+// visible. Additive and idempotent: guards on the 'seed' marker these runs carry
+// (not a total-run threshold), so it leaves any pre-existing runs untouched and
+// never double-seeds on restart.
+const { seededRuns } = db
+  .prepare("SELECT COUNT(*) AS seededRuns FROM test_runs_v2 WHERE created_by = 'seed'")
+  .get()
+if (seededRuns === 0) seedFlakyRuns()
 
 const { prefCount } = db.prepare('SELECT COUNT(*) AS prefCount FROM user_preferences').get()
 if (prefCount === 0) {
@@ -465,6 +497,60 @@ function seedReports() {
     JSON.stringify(results),
     '2026-06-14T10:25:00.000Z',
   )
+}
+
+function seedFlakyRuns() {
+  const suite = db.prepare('SELECT id FROM test_suites ORDER BY id LIMIT 1').get()
+  if (!suite) return
+
+  const cases = db.prepare('SELECT id, title FROM test_cases ORDER BY id LIMIT 5').all()
+  if (cases.length < 5) return
+
+  // One column per run (6 runs), one row per case. Outcomes are deterministic so
+  // the leaderboard is reproducible and each metric branch is exercised:
+  //   0 high fail ratio · 1 high volatility · 2 regression · 3 stable · 4 broken
+  const patterns = [
+    ['passed', 'failed', 'failed', 'passed', 'failed', 'failed'],
+    ['passed', 'failed', 'passed', 'failed', 'passed', 'failed'],
+    ['passed', 'passed', 'passed', 'passed', 'failed', 'failed'],
+    ['passed', 'passed', 'passed', 'passed', 'passed', 'passed'],
+    ['failed', 'failed', 'failed', 'failed', 'failed', 'failed'],
+  ]
+  const RUNS = 6
+  const note = 'Assertion failed intermittently with no code change between runs.'
+
+  const insertRun = db.prepare(`
+    INSERT INTO test_runs_v2 (suite_id, status, pass_count, fail_count, skip_count, start_time, end_time, created_by)
+    VALUES (?, ?, ?, ?, 0, ?, ?, 'seed')
+  `)
+  const insertResult = db.prepare(
+    'INSERT INTO test_run_results (run_id, test_case_id, case_title, result, notes, failed_at, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+  )
+
+  db.transaction(() => {
+    for (let run = 0; run < RUNS; run++) {
+      const day = String(8 + run).padStart(2, '0') // 2026-06-08 … 2026-06-13
+      const startTime = `2026-06-${day}T09:00:00.000Z`
+      const endTime = `2026-06-${day}T09:18:00.000Z`
+
+      const outcomes = cases.map((_, idx) => patterns[idx][run])
+      const passCount = outcomes.filter((o) => o === 'passed').length
+      const failCount = outcomes.filter((o) => o === 'failed').length
+
+      const { lastInsertRowid: runId } = insertRun.run(
+        suite.id,
+        failCount > 0 ? 'failed' : 'passed',
+        passCount,
+        failCount,
+        startTime,
+        endTime,
+      )
+      cases.forEach((c, idx) => {
+        const result = patterns[idx][run]
+        insertResult.run(runId, c.id, c.title, result, result === 'failed' ? note : '', result === 'failed' ? endTime : null, idx)
+      })
+    }
+  })()
 }
 
 export default db

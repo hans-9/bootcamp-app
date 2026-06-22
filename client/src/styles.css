@@ -495,3 +495,37 @@ kbd {
   tr { break-inside: avoid; }
   @page { margin: 16mm; }
 }
+
+/* Flaky Tests */
+.flaky-intro { max-width: 70ch; margin: -6px 0 16px; }
+.flaky-table .flake-rank-col { width: 36px; text-align: center; color: var(--muted); font-weight: 600; }
+.flake-subtle { font-size: 12px; font-weight: 400; margin-top: 2px; }
+
+.flake-ratio { display: flex; align-items: center; gap: 8px; }
+.flake-ratio-bar {
+  flex: 0 0 64px; height: 6px; border-radius: 999px;
+  background: var(--border); overflow: hidden;
+}
+.flake-ratio-bar span { display: block; height: 100%; background: var(--st-failed); border-radius: 999px; }
+.flake-ratio-pct { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 34px; }
+
+.flake-vol-high { background: var(--sev-critical-bg); color: var(--sev-critical-fg); }
+.flake-vol-med  { background: var(--sev-major-bg);    color: var(--sev-major-fg); }
+.flake-vol-low  { background: var(--sev-trivial-bg);  color: var(--sev-trivial-fg); }
+
+.flake-spark { display: inline-flex; gap: 3px; align-items: center; }
+.flake-dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.flake-dot-passed { background: var(--st-passed); }
+.flake-dot-failed { background: var(--st-failed); }
+
+.flake-hyp { max-width: 36ch; }
+
+.flaky-note { margin-top: 16px; }
+.flaky-note h3 { margin: 0 0 8px; font-size: 15px; }
+.flaky-note p { margin: 0 0 8px; max-width: 80ch; }
+.flaky-note p:last-child { margin-bottom: 0; }
+
+@media (max-width: 768px) {
+  .flake-hyp { max-width: none; }
+  .flaky-table .flake-subtle { white-space: normal; }
+}
