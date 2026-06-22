@@ -1,0 +1,28 @@
+{
+  "name": "qa-command-center",
+  "displayName": "QA Command Center",
+  "version": "1.0.0",
+  "description": "A portable QA toolkit for Claude Code: slash commands, skills, subagents, and hooks for writing test cases, filing bugs, reviewing changes for risk, drafting release notes, and tracking flaky tests.",
+  "author": {
+    "name": "Hans Caceres"
+  },
+  "homepage": "https://github.com/hans-9/bootcamp-app",
+  "repository": "https://github.com/hans-9/bootcamp-app",
+  "license": "MIT",
+  "keywords": ["qa", "testing", "test-cases", "bug-reports", "flaky-tests", "code-review", "release-notes"],
+  "commands": [
+    "./.claude/commands/flaky-triage.md",
+    "./.claude/commands/repro-steps.md",
+    "./.claude/commands/api-route.md"
+  ],
+  "agents": [
+    "./.claude/agents/flake-analyzer.md",
+    "./.claude/agents/qa-reviewer.md",
+    "./.claude/agents/release-notes-writer.md",
+    "./.claude/agents/test-writer.md"
+  ],
+  "skills": [
+    "./.claude/skills"
+  ],
+  "hooks": "./.claude/hooks/hooks.json"
+}
