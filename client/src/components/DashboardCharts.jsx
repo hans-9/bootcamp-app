@@ -34,6 +34,7 @@ function useChartColors() {
   }
   const [colors, setColors] = useState(read)
   useEffect(() => {
+    setColors(read()) // re-read after mount in case the stylesheet applied late
     const obs = new MutationObserver(() => setColors(read()))
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     return () => obs.disconnect()

@@ -199,10 +199,14 @@ label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; }
 }
 
 /* Wrap a table so it scrolls horizontally on narrow screens instead of
-   squishing. Overflow is gated to mobile because overflow-x:auto also clips
-   the y-axis, which would cut off the row-action dropdowns on desktop. */
-.table-wrap { border-radius: var(--radius-card); }
-@media (max-width: 768px) { .table-wrap { overflow-x: auto; } }
+   squishing or overflowing the page. Overflow is gated to mobile because
+   overflow-x:auto also clips the y-axis (which would cut off row-action
+   dropdowns on desktop). On mobile, the last row's menu would open below the
+   table and get clipped by that scroll box, so it flips to open upward. */
+@media (max-width: 768px) {
+  .table-wrap { overflow-x: auto; }
+  .table-wrap tbody tr:last-child .menu { top: auto; bottom: 100%; margin-bottom: 4px; }
+}
 
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); }
