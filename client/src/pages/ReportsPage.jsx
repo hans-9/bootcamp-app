@@ -43,6 +43,7 @@ export default function ReportsPage() {
           <div className="empty">No reports yet. Generate one from a test run.</div>
         )}
         {!loading && !error && items.length > 0 && (
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -72,15 +73,16 @@ export default function ReportsPage() {
                 >
                   <td className="title-cell">{r.suite_name}</td>
                   <td>{r.total_count}</td>
-                  <td style={{ color: 'var(--st-passed)', fontWeight: 500 }}>{r.passed_count}</td>
-                  <td style={{ color: r.failed_count > 0 ? 'var(--st-failed)' : undefined, fontWeight: 500 }}>{r.failed_count}</td>
-                  <td style={{ color: 'var(--st-skipped)', fontWeight: 500 }}>{r.skipped_count}</td>
+                  <td className="status-count" style={{ color: 'var(--st-passed)' }}>{r.passed_count}</td>
+                  <td className="status-count" style={{ color: r.failed_count > 0 ? 'var(--st-failed)' : undefined }}>{r.failed_count}</td>
+                  <td className="status-count" style={{ color: 'var(--st-skipped)' }}>{r.skipped_count}</td>
                   <td>{passRate(r)}</td>
                   <td className="muted">{formatDate(r.generated_at)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

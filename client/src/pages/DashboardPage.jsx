@@ -180,6 +180,7 @@ export default function DashboardPage() {
               No test runs yet. Start a test run to track pass and fail history here.
             </div>
           ) : (
+            <div className="table-wrap">
             <table>
               <thead>
                 <tr>
@@ -200,8 +201,8 @@ export default function DashboardPage() {
                   >
                     <td className="title-cell">{r.suite_name}</td>
                     <td><StatusPill status={r.status} /></td>
-                    <td style={{ color: 'var(--st-passed)', fontWeight: 500 }}>{r.pass_count}</td>
-                    <td style={{ color: r.fail_count > 0 ? 'var(--st-failed)' : undefined, fontWeight: 500 }}>
+                    <td className="status-count" style={{ color: 'var(--st-passed)' }}>{r.pass_count}</td>
+                    <td className="status-count" style={{ color: r.fail_count > 0 ? 'var(--st-failed)' : undefined }}>
                       {r.fail_count}
                     </td>
                     <td className="muted">{relativeTime(r.start_time)}</td>
@@ -209,6 +210,7 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

@@ -39,6 +39,7 @@ export default function TestRunsPage() {
           <div className="empty">No test runs yet. Start one from a suite.</div>
         )}
         {!loading && !error && items.length > 0 && (
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -60,14 +61,15 @@ export default function TestRunsPage() {
                 >
                   <td className="title-cell">{r.suite_name}</td>
                   <td><StatusPill status={r.status} /></td>
-                  <td style={{ color: 'var(--st-passed)', fontWeight: 500 }}>{r.pass_count}</td>
-                  <td style={{ color: r.fail_count > 0 ? 'var(--st-failed)' : undefined, fontWeight: 500 }}>{r.fail_count}</td>
-                  <td style={{ color: 'var(--st-skipped)', fontWeight: 500 }}>{r.skip_count}</td>
+                  <td className="status-count" style={{ color: 'var(--st-passed)' }}>{r.pass_count}</td>
+                  <td className="status-count" style={{ color: r.fail_count > 0 ? 'var(--st-failed)' : undefined }}>{r.fail_count}</td>
+                  <td className="status-count" style={{ color: 'var(--st-skipped)' }}>{r.skip_count}</td>
                   <td className="muted">{formatDate(r.start_time)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

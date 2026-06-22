@@ -82,6 +82,7 @@ export default function TestSuitesPage() {
       </div>
 
       <div className="card">
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -129,6 +130,7 @@ export default function TestSuitesPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {loading && <div className="empty">Loading…</div>}
         {error && !loading && <div className="empty">Error: {error}</div>}
