@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.7.0] — 2026-06-22
+
+### Added
+- A flaky test tracker that ranks your ten flakiest tests by fail rate, each with a plain-language explanation of the likely root cause. New flaky tests are flagged automatically and announced over Discord.
+- The QA toolkit is now packaged as an installable plugin, bundling its commands, skills, and helpers so you can drop the whole kit into another project.
+- The app is now a deployed, hosted site, so you can reach it from a live URL instead of running it yourself.
+
+### Fixed
+- Charts now follow your theme: their colors are read from the active palette, so axes and series stay visible in dark mode.
+- Long tables now scroll sideways on phones instead of squishing or spilling off the page, while staying full-width on larger screens.
+- The bug activity view now offers a clear next step when there's nothing to show yet.
+- Row action menus on the last row of a table no longer get clipped on mobile.
+- Discord alerts are more reliable: a recurring flake alerts again once the test settles, a failed alert retries instead of being silently lost, and a Discord outage no longer blocks the run that triggered it.
+
+### Changed
+- A refreshed look throughout: more breathing room, lighter borders, rounder cards, and consistent spacing across pages.
+
 ## [v1.6.0] — 2026-06-21
 
 ### Changed
